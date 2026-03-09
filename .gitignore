@@ -1,0 +1,24 @@
+# Build outputs
+build/
+tools/host_debug/host_debug
+tests/test_runner
+*.o
+*.a
+*.prg
+*.d64
+*.crt
+*.vice-*
+
+# Distribution (reserved)
+dist/*
+!dist/.gitkeep
+
+# Logs, OS, and tool caches
+*.log
+.DS_Store
+.cache/
+
+# clangd (make compdb); machine-generated, absolute paths — do not commit
+compile_commands.json
+compile_commands.host.json
+compile_commands.c64.json
