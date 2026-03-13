@@ -32,7 +32,7 @@ The answer is not a feature-rich reinterpretation, but a rigorous, minimal, high
 - **Host / tests:** `make host_debug`, `make test` (standard `cc`).
 - **C64:** `make c64` (requires [llvm-mos](https://github.com/llvm-mos/llvm-mos) with `mos-c64-clang`). Run: `make c64_run` (VICE) or load `build/quattro.prg` in your emulator.
 - **clangd:** `make compdb` (host) or `make compdb-all` (host + C64). Requires [Bear](https://github.com/rizsotto/Bear); generated files are not committed.
-- **Browser demo (experimental):** Option A — `make web-demo`, commit `web/`, Pages from `/web`. Option B — workflow builds and deploys; Pages from GitHub Actions. See [web/README.md](web/README.md).
+- **Browser demo (experimental):** Workflow builds and deploys to GitHub Pages. See [web-src/README.md](web-src/README.md).
 
 ## Controls (C64)
 
@@ -54,7 +54,7 @@ The answer is not a feature-rich reinterpretation, but a rigorous, minimal, high
 | `src/`    | Core, platform C64, render |
 | `tests/` | Core tests             |
 | `tools/` | Host debug harness     |
-| `web/`   | GitHub Pages browser demo (VICE.js; experimental) |
+| `web-src/` | Browser demo source (templates; Pages deployed via CI) |
 | `assets/` | Placeholder for future |
 
 Documentation is the source of truth for decisions and semantics. Start with [docs/host-core-contract.md](docs/host-core-contract.md) and [docs/roadmap.md](docs/roadmap.md).

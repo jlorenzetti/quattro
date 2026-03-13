@@ -1,9 +1,7 @@
-# Option B: build C64 and web demo in CI, deploy to GitHub Pages.
-# Static templates (web/index.html, NOTICE, README) are in repo; quattro.prg and
-# vendor/x64.js are produced at build time. Option A (make web-demo + commit web/)
-# remains the fallback until this workflow is verified live.
+# Build C64 and browser demo in CI, deploy to GitHub Pages.
+# Source: web-src/ (templates). Generated: quattro.prg, vendor/x64.js. Output: site/.
 
-name: Pages (Option B)
+name: Pages
 
 on:
   push:
@@ -45,7 +43,7 @@ jobs:
 
       - name: Assemble site
         run: |
-          cp web/index.html web/NOTICE web/README.md site/
+          cp web-src/index.html web-src/NOTICE web-src/README.md site/
           cp build/quattro.prg site/
 
       - name: Upload Pages artifact

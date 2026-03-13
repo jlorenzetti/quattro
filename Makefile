@@ -1,4 +1,4 @@
-.PHONY: help host_debug test c64 c64_run compdb compdb-host compdb-c64 compdb-all web-demo clean
+.PHONY: help host_debug test c64 c64_run compdb compdb-host compdb-c64 compdb-all clean
 
 CORE_SRC := src/core/board.c src/core/game_state.c src/core/piece.c \
 	src/core/rng.c src/core/rules.c src/core/scoring.c
@@ -22,7 +22,6 @@ help:
 	@echo "  make compdb-host  Generate compile_commands.host.json only"
 	@echo "  make compdb-c64   Generate compile_commands.c64.json only (requires Bear + llvm-mos)"
 	@echo "  make compdb-all   Generate merged compile_commands.json (host + C64)"
-	@echo "  make web-demo     Assemble web/ for GitHub Pages (C64 PRG + VICE.js; run from repo root)"
 	@echo "  make clean        Remove build artifacts"
 
 host_debug: tools/host_debug/host_debug
@@ -62,16 +61,6 @@ compdb-c64:
 compdb-all: compdb-host compdb-c64
 	@python3 -c "import json; a=json.load(open('compile_commands.host.json')); b=json.load(open('compile_commands.c64.json')); json.dump(a+b, open('compile_commands.json','w'), indent=2)"
 	@echo "compile_commands.json updated (host + C64 merged)."
-
-WEB_DIR := web
-WEB_VENDOR := $(WEB_DIR)/vendor
-WEB_X64_JS := $(WEB_VENDOR)/x64.js
-
-web-demo: $(C64_PRG)
-	@mkdir -p $(WEB_VENDOR)
-	@cp $(C64_PRG) $(WEB_DIR)/quattro.prg
-	@if [ -f web-poc/vendor/x64.js ]; then cp web-poc/vendor/x64.js $(WEB_X64_JS); else echo "Downloading VICE.js x64.js..."; curl -sSfL -o $(WEB_X64_JS) 'https://raw.githubusercontent.com/rjanicek/vice.js/master/js/x64.js'; fi
-	@echo "web/ ready. Commit web/ and set GitHub Pages source to /web."
 
 clean:
 	rm -f tools/host_debug/host_debug tests/test_runner

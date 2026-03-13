@@ -1,0 +1,17 @@
+This directory includes third-party software under the following terms.
+
+---
+
+VICE.js (vendor/x64.js)
+
+  JavaScript port of VICE (Versatile Commodore Emulator), used to run the
+  Quattro C64 binary in the browser.
+
+  Copyright (C) VICE project; JavaScript port by Richard Janicek and contributors.
+
+  Licensed under the GNU General Public License v2.0 (GPL-2.0-only).
+  Source code: https://github.com/rjanicek/vice.js
+  Original VICE: https://sourceforge.net/projects/vice-emu/
+
+  This is separate from the Quattro game code, which is under the MIT License
+  (see repository root LICENSE).
