@@ -12,20 +12,26 @@
   </style>
 </head>
 <body>
-  <div id="overlay"><span>CLICK TO START</span></div>
+  <div id="overlay"><span id="overlay-text">CLICK TO START</span></div>
   <canvas id="canvas"></canvas>
 
   <script>
     (function () {
       var overlay = document.getElementById('overlay');
+      var overlayText = document.getElementById('overlay-text');
       var canvas = document.getElementById('canvas');
 
       function audioDetected() {
         return (typeof AudioContext !== 'undefined') || (typeof webkitAudioContext !== 'undefined');
       }
 
+      function showError() {
+        overlayText.textContent = 'LOAD FAILED. CLICK TO RETRY.';
+        overlay.addEventListener('click', start, { once: true });
+      }
+
       function start() {
-        overlay.remove();
+        overlay.removeEventListener('click', start);
         var viceArgs = ['-autostart', 'quattro.prg'].concat(
           audioDetected() ? ['-soundsync', '0', '-soundrate', '22050', '-soundfragsize', '2'] : ['+sound']
         );
@@ -45,10 +51,17 @@
             };
             var s = document.createElement('script');
             s.src = 'vendor/x64.js';
-            s.onerror = function () { console.error('vendor/x64.js not found'); };
+            s.onload = function () { overlay.remove(); };
+            s.onerror = function () {
+              console.error('vendor/x64.js not found');
+              showError();
+            };
             document.body.appendChild(s);
           })
-          .catch(function (e) { console.error('Could not load game:', e); });
+          .catch(function (e) {
+            console.error('Could not load game:', e);
+            showError();
+          });
       }
 
       overlay.addEventListener('click', start, { once: true });
