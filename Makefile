@@ -44,7 +44,7 @@ $(C64_PRG): $(CORE_SRC) $(C64_PLATFORM_SRC)
 
 c64_run: $(C64_PRG)
 	@command -v x64sc >/dev/null 2>&1 || { echo "VICE x64sc not found; install VICE or run the PRG in your C64 emulator."; exit 1; }
-	x64sc $(C64_PRG)
+	x64sc $(abspath $(C64_PRG))
 
 compdb: compdb-host
 	@cp compile_commands.host.json compile_commands.json
