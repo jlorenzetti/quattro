@@ -22,3 +22,12 @@ dist/*
 compile_commands.json
 compile_commands.host.json
 compile_commands.c64.json
+
+# web-poc: VICE.js and local PRG (see web-poc/README.md)
+web-poc/vendor/
+web-poc/*.prg
+
+# web: GitHub Pages demo — allow committed PRG and vendor (see web/README.md)
+!web/quattro.prg
+!web/vendor/
+!web/vendor/x64.js
