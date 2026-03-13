@@ -6,6 +6,8 @@ A sober, historically-minded falling-blocks game for Commodore 64, built with co
   <img src="docs/quattro-demo.gif" alt="Quattro gameplay demo" width="800">
 </p>
 
+**Experimental browser demo:** [Play Quattro](https://jlorenzetti.github.io/quattro/)
+
 ## Status
 
 **Playable alpha.**
