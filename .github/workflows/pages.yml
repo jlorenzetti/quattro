@@ -5,7 +5,7 @@ name: Pages
 
 on:
   push:
-    branches: [feature/browser-demo-pages]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
