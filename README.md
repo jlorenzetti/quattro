@@ -2,6 +2,10 @@
 
 A sober, historically-minded falling-blocks game for Commodore 64, built with contemporary software engineering discipline.
 
+<p align="center">
+  <img src="docs/quattro-demo.gif" alt="Quattro gameplay demo" width="800">
+</p>
+
 ## Status
 
 **Playable alpha.**
