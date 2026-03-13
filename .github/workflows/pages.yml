@@ -1,0 +1,65 @@
+# Option B: build C64 and web demo in CI, deploy to GitHub Pages.
+# Static templates (web/index.html, NOTICE, README) are in repo; quattro.prg and
+# vendor/x64.js are produced at build time. Option A (make web-demo + commit web/)
+# remains the fallback until this workflow is verified live.
+
+name: Pages (Option B)
+
+on:
+  push:
+    branches: [feature/browser-demo-pages]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install llvm-mos
+        run: |
+          curl -sSfL -o llvm-mos-linux.tar.xz \
+            'https://github.com/llvm-mos/llvm-mos-sdk/releases/latest/download/llvm-mos-linux.tar.xz'
+          tar xf llvm-mos-linux.tar.xz
+          # Tarball extracts to llvm-mos/ with bin/ inside (same as smoke-test)
+          echo "$GITHUB_WORKSPACE/llvm-mos/bin" >> "$GITHUB_PATH"
+
+      - name: Build C64
+        run: make c64
+
+      - name: Download VICE.js x64.js
+        run: |
+          mkdir -p site/vendor
+          curl -sSfL -o site/vendor/x64.js \
+            'https://raw.githubusercontent.com/rjanicek/vice.js/master/js/x64.js'
+
+      - name: Assemble site
+        run: |
+          cp web/index.html web/NOTICE web/README.md site/
+          cp build/quattro.prg site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

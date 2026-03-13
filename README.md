@@ -32,7 +32,7 @@ The answer is not a feature-rich reinterpretation, but a rigorous, minimal, high
 - **Host / tests:** `make host_debug`, `make test` (standard `cc`).
 - **C64:** `make c64` (requires [llvm-mos](https://github.com/llvm-mos/llvm-mos) with `mos-c64-clang`). Run: `make c64_run` (VICE) or load `build/quattro.prg` in your emulator.
 - **clangd:** `make compdb` (host) or `make compdb-all` (host + C64). Requires [Bear](https://github.com/rizsotto/Bear); generated files are not committed.
-- **Browser demo (experimental):** `make web-demo` then commit `web/`; set GitHub Pages to deploy from `/web`. See [web/README.md](web/README.md).
+- **Browser demo (experimental):** Option A — `make web-demo`, commit `web/`, Pages from `/web`. Option B — workflow builds and deploys; Pages from GitHub Actions. See [web/README.md](web/README.md).
 
 ## Controls (C64)
 
