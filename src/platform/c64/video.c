@@ -14,19 +14,29 @@
 #define CHAR_EMPTY  0x20
 /** PETSCII: full block (same for locked and active; color distinguishes). */
 #define CHAR_BLOCK  0xA0
-
-/** C64 color: locked blocks. */
-#define COLOR_LOCKED  1
-/** C64 color: active piece (different from locked). */
-#define COLOR_ACTIVE  3
-/** C64 color: empty area. */
-#define COLOR_EMPTY   0
 /** PETSCII: border (same block char, distinct color). */
-#define CHAR_BORDER  0xA0
-/** C64 color: frame border. */
-#define COLOR_BORDER 2
+#define CHAR_BORDER 0xA0
+
+/** C64 color: locked blocks (primary content; white). */
+#define COLOR_LOCKED  1
+/** C64 color: active piece (distinct from locked; cyan). */
+#define COLOR_ACTIVE  3
+/** C64 color: empty area (black, same as background). */
+#define COLOR_EMPTY   0
+/** C64 color: frame border (light grey; distinct from locked). */
+#define COLOR_BORDER  15
+/** C64 color: HUD text (light grey; matches frame). */
+#define COLOR_HUD     15
+/** C64 color: game over text (white on frame-color band). */
+#define COLOR_GAMEOVER 1
+
+/** VIC-II: border and background for unified screen. */
+#define C64_BORDER_COL    (*(volatile unsigned char *)0xD020)
+#define C64_BG_COL       (*(volatile unsigned char *)0xD021)
 
 void video_init(void) {
+    C64_BORDER_COL = COLOR_EMPTY;
+    C64_BG_COL = COLOR_EMPTY;
     unsigned int i;
     for (i = 0; i < (unsigned int)(C64_SCREEN_COLS * C64_SCREEN_ROWS); i++) {
         C64_SCREEN_RAM[i] = CHAR_EMPTY;
@@ -52,13 +62,29 @@ void video_draw_frame(void) {
     }
 }
 
-static void put_string(unsigned int col, unsigned int row, const char *s, unsigned int len) {
+static void put_string_at(unsigned int col, unsigned int row, const char *s,
+                         unsigned int len, unsigned int color) {
     unsigned int i;
     for (i = 0; i < len && (col + i) < C64_SCREEN_COLS; i++) {
         unsigned int off = C64_SCREEN_OFFSET(col + i, row);
         C64_SCREEN_RAM[off] = (unsigned char)s[i];
-        C64_COLOR_RAM[off] = COLOR_EMPTY;
+        C64_COLOR_RAM[off] = (unsigned char)color;
     }
+}
+
+/** Write string in reverse PETSCII (char + 128) so glyph uses global bg, rest uses color. */
+static void put_string_reverse_at(unsigned int col, unsigned int row, const char *s,
+                                  unsigned int len, unsigned int bg_color) {
+    unsigned int i;
+    for (i = 0; i < len && (col + i) < C64_SCREEN_COLS; i++) {
+        unsigned int off = C64_SCREEN_OFFSET(col + i, row);
+        C64_SCREEN_RAM[off] = (unsigned char)((unsigned char)s[i] + 0x80u);
+        C64_COLOR_RAM[off] = (unsigned char)bg_color;
+    }
+}
+
+static void put_string(unsigned int col, unsigned int row, const char *s, unsigned int len) {
+    put_string_at(col, row, s, len, COLOR_HUD);
 }
 
 static void put_number(unsigned int col, unsigned int row, uint32_t value, unsigned int width) {
@@ -67,7 +93,7 @@ static void put_number(unsigned int col, unsigned int row, uint32_t value, unsig
     for (i = width; i > 0; i--) {
         unsigned int off = C64_SCREEN_OFFSET(col + i - 1, row);
         C64_SCREEN_RAM[off] = (unsigned char)('0' + (value % 10));
-        C64_COLOR_RAM[off] = COLOR_EMPTY;
+        C64_COLOR_RAM[off] = COLOR_HUD;
         value /= 10;
     }
 }
@@ -86,9 +112,20 @@ void video_draw_hud(const GameState *state) {
 }
 
 void video_draw_game_over(void) {
-    unsigned int col = 15;
-    unsigned int row = 12;
-    put_string(col, row, "GAME OVER", 9);
+    unsigned int r, c;
+    unsigned int board_left = BOARD_SCREEN_X;
+    unsigned int board_right = BOARD_SCREEN_X + QUATTRO_BOARD_WIDTH - 1;
+    unsigned int row_mid = 12;  /* vertical centre of visible board */
+    /* Three-row band: solid block (0xA0) with light grey. */
+    for (r = row_mid - 1; r <= row_mid + 1; r++) {
+        for (c = board_left; c <= board_right; c++) {
+            unsigned int off = C64_SCREEN_OFFSET(c, r);
+            C64_SCREEN_RAM[off] = CHAR_BLOCK;
+            C64_COLOR_RAM[off] = COLOR_BORDER;
+        }
+    }
+    /* "GAME  OVER" (space between) in reverse, centred on middle row. */
+    put_string_reverse_at(15, row_mid, "GAME  OVER", 10, COLOR_BORDER);
 }
 
 void video_draw_board(const GameState *state) {

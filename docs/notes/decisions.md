@@ -34,3 +34,15 @@ No assembly in core game logic unless profiling demonstrates necessity.
 - support two rotation directions
 - no wall kicks by default
 - evaluate a minimal micro-kick only later, and only if playtesting clearly justifies it
+
+---
+
+## 2026-03-12 — Custom charset: defer to isolated investigation
+**Status:** accepted
+
+**Decision**
+Custom charset remains a valid direction for Phase 2.5, but implementation is blocked by unresolved C64/VIC/runtime integration issues in the current llvm-mos setup. The project baseline returns to the stable ROM-charset build (PETSCII 0xA0 for block and frame). Charset work continues as an isolated technical investigation and will only be reintegrated after a minimal standalone probe program succeeds.
+
+**Rule:** Do not test charset changes inside the full Quattro game until the probe program validates VIC charset switching.
+
+**Reference:** `docs/notes/custom-charset-investigation.md`
