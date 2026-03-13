@@ -128,6 +128,97 @@ void video_draw_game_over(void) {
     put_string_reverse_at(15, row_mid, "GAME  OVER", 10, COLOR_BORDER);
 }
 
+static void clear_screen(void) {
+    unsigned int i;
+    for (i = 0; i < (unsigned int)(C64_SCREEN_COLS * C64_SCREEN_ROWS); i++) {
+        C64_SCREEN_RAM[i] = CHAR_EMPTY;
+        C64_COLOR_RAM[i] = COLOR_EMPTY;
+    }
+}
+
+void video_clear(void) {
+    clear_screen();
+}
+
+/** Block wordmark: 4x6 per letter, one empty column between letters. */
+#define TITLE_LETTER_W  4
+#define TITLE_LETTER_H  6
+#define TITLE_LETTER_GAP 1
+#define TITLE_WORDMARK_COLOR 1
+
+static const uint8_t title_letters[7][6] = {
+    /* Q */ { 0x0Fu, 0x09u, 0x09u, 0x09u, 0x0Bu, 0x0Eu },
+    /* U */ { 0x09u, 0x09u, 0x09u, 0x09u, 0x09u, 0x0Fu },
+    /* A */ { 0x07u, 0x09u, 0x09u, 0x0Fu, 0x09u, 0x09u },
+    /* T */ { 0x0Fu, 0x02u, 0x02u, 0x02u, 0x02u, 0x02u },
+    /* T */ { 0x0Fu, 0x02u, 0x02u, 0x02u, 0x02u, 0x02u },
+    /* R */ { 0x0Fu, 0x09u, 0x0Fu, 0x0Au, 0x09u, 0x09u },
+    /* O */ { 0x0Fu, 0x09u, 0x09u, 0x09u, 0x09u, 0x0Fu },
+};
+
+static void draw_block_letter(unsigned int start_col, unsigned int start_row,
+                               const uint8_t *rows) {
+    unsigned int r, c;
+    for (r = 0; r < TITLE_LETTER_H; r++) {
+        for (c = 0; c < TITLE_LETTER_W; c++) {
+            if ((rows[r] >> (TITLE_LETTER_W - 1 - c)) & 1u) {
+                unsigned int col = start_col + c;
+                unsigned int row = start_row + r;
+                if (col < C64_SCREEN_COLS && row < C64_SCREEN_ROWS) {
+                    unsigned int off = C64_SCREEN_OFFSET(col, row);
+                    C64_SCREEN_RAM[off] = CHAR_BLOCK;
+                    C64_COLOR_RAM[off] = TITLE_WORDMARK_COLOR;
+                }
+            }
+        }
+    }
+}
+
+void video_draw_title(void) {
+    unsigned int i;
+    unsigned int word_w = 7 * TITLE_LETTER_W + 6 * TITLE_LETTER_GAP;
+    unsigned int start_col = (C64_SCREEN_COLS - word_w) / 2;
+    unsigned int start_row = 6;
+
+    clear_screen();
+    for (i = 0; i < 7u; i++) {
+        draw_block_letter(start_col + i * (TITLE_LETTER_W + TITLE_LETTER_GAP), start_row,
+                         title_letters[i]);
+    }
+    put_string_at(13, 23, "PRESS ANY KEY", 13, COLOR_HUD);
+}
+
+void video_draw_start_help(uint8_t start_level) {
+    unsigned int base_row = 8;
+    unsigned int col_start;
+    const unsigned int block_w = 14;
+
+    clear_screen();
+    col_start = (C64_SCREEN_COLS - 14) / 2;
+    put_string_at(col_start, base_row, "START LEVEL  ", 13, COLOR_HUD);
+    C64_SCREEN_RAM[C64_SCREEN_OFFSET(col_start + 13, base_row)] =
+        (unsigned char)('0' + (start_level % 10));
+    C64_COLOR_RAM[C64_SCREEN_OFFSET(col_start + 13, base_row)] = COLOR_HUD;
+
+    base_row += 2;
+    col_start = (C64_SCREEN_COLS - block_w) / 2;
+    put_string_at(col_start, base_row, "0-9     SET", 11, COLOR_HUD);
+    put_string_at(col_start, base_row + 1, "RETURN  START", 13, COLOR_HUD);
+
+    base_row += 3;
+    put_string_at(col_start, base_row, "A/D     MOVE", 12, COLOR_HUD);
+    put_string_at(col_start, base_row + 1, "Z/X     ROTATE", 14, COLOR_HUD);
+    put_string_at(col_start, base_row + 2, "SPACE   DROP", 12, COLOR_HUD);
+}
+
+void video_draw_replay_prompt(void) {
+    const char *msg = "RETURN AGAIN";
+    unsigned int len = 12;
+    unsigned int col = (C64_SCREEN_COLS - len) / 2;
+    unsigned int row = C64_SCREEN_ROWS - 1;
+    put_string_at(col, row, msg, len, COLOR_HUD);
+}
+
 void video_draw_board(const GameState *state) {
     const Board *board = &state->board;
     int8_t ax[PIECE_BLOCK_COUNT], ay[PIECE_BLOCK_COUNT];

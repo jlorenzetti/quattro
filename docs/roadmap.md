@@ -1,15 +1,19 @@
 # Roadmap
 
 ## Phase 0 — Pre-production
+
+**Status:** completed
+
 - define scope
 - choose toolchain
 - choose visual representation strategy
 - choose input model
 - decide minimal audio direction
 
+## Phase 1 — Core prototype
+
 **Status:** completed
 
-## Phase 1 — Core prototype
 - board model
 - piece model
 - movement and rotation
@@ -18,17 +22,16 @@
 - score
 - host-side tests and debug harness
 
+## Phase 2 — First playable C64 build
+
 **Status:** completed
 
-## Phase 2 — First playable C64 build
 - C64 entry point
 - rendering path
 - input polling
 - timing loop
 - minimal presentation layer
 - repeated playtests
-
-**Status:** completed
 
 ## Phase 2.5 — Presentation identity
 
@@ -40,12 +43,13 @@
 - Custom charset: isolated investigation; see `docs/notes/custom-charset-investigation.md`.
 
 ## Phase 2.6 — Interface composition
-- decide the long-term information layout around the playfield
-- evaluate whether persistent help text belongs on the main game screen
-- decide whether next-piece preview should become part of the visible interface
-- title screen and restart / replay flow (deferred from Phase 2)
-- refine game-over composition as an explicit interface state
-- keep interface density low and avoid decorative or statistics-heavy UI
+
+**Status:** completed
+
+- State flow: Title → StartHelp → Game → GameOver (with replay) → StartHelp. Boot starts at Title.
+- Title: block-built QUATTRO wordmark, one prompt line (PRESS ANY KEY). Start/help: start level 0–9 (keys 0–9), RETURN to start; controls listed (A/D MOVE, Z/X ROTATE, SPACE DROP). Game over: band on field + "RETURN AGAIN" at bottom; RETURN → StartHelp.
+- In-game UI unchanged: SCORE / LINES / LEVEL only (no next-piece in 2.6). Core: minimal `game_start(..., start_level)` and scoring `initial_level` for level progression.
+- Gravity: dedicated counter, PAL-friendly table (classic console pacing reference). Input: A/D repeat when held (keyboard matrix).
 
 ## Phase 3 — Feel and performance
 - tune responsiveness

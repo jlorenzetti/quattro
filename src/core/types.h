@@ -60,6 +60,8 @@ typedef struct {
     uint32_t score;
     uint16_t lines_cleared;
     uint8_t level;
+    /** Initial level at game start (0–9); level = initial_level + lines_cleared / 10. */
+    uint8_t initial_level;
 } ScoreState;
 
 typedef enum {

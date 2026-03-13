@@ -76,6 +76,7 @@ typedef struct {
     uint32_t score;
     uint16_t lines_cleared;
     uint8_t level;
+    uint8_t initial_level;  /* start level (0–9); level = initial_level + lines_cleared/10 */
 } ScoreState;
 ```
 
@@ -169,9 +170,9 @@ bool rules_can_spawn_piece(const Board *board, PieceKind kind);
 
 ## Scoring API
 ```c
-void scoring_reset(ScoreState *score);
+void scoring_reset(ScoreState *score, uint8_t start_level);  /* start_level 0–9 */
 void scoring_apply_line_clear(ScoreState *score, uint8_t cleared_lines);
-uint8_t scoring_compute_level(uint16_t total_lines_cleared);
+uint8_t scoring_compute_level(uint16_t total_lines_cleared, uint8_t start_level);
 ```
 
 ## RNG API
@@ -183,7 +184,7 @@ PieceKind rng_next_piece(RngState *rng);
 
 ## Game API
 ```c
-void game_start(GameState *state, uint32_t seed);
+void game_start(GameState *state, uint32_t seed, uint8_t start_level);  /* start_level 0–9 */
 void game_apply_command(GameState *state, Command command);
 void game_tick_gravity(GameState *state);
 bool game_is_over(const GameState *state);
@@ -192,7 +193,7 @@ bool game_is_over(const GameState *state);
 ## Core semantics
 ### `game_start()`
 1. clear board
-2. reset score
+2. reset score (with given start_level 0–9; level progresses as initial_level + lines_cleared/10)
 3. set phase running
 4. seed RNG
 5. generate `next_piece`

@@ -8,7 +8,7 @@
 
 int test_game_state_run(void) {
     GameState state;
-    game_start(&state, 42);
+    game_start(&state, 42, 0);
 
     if (game_is_over(&state)) return 1;
     if (state.phase != GAME_PHASE_RUNNING) return 1;
@@ -27,7 +27,7 @@ int test_game_state_run(void) {
 
     PieceKind first_next = state.next_piece;
     GameState state2;
-    game_start(&state2, 42);
+    game_start(&state2, 42, 0);
     if (state2.next_piece != first_next) return 1;
 
     return 0;
@@ -42,7 +42,7 @@ int test_game_state_full_run(void) {
     const unsigned max_ticks = 100000u;
 
     GameState state;
-    game_start(&state, seed);
+    game_start(&state, seed, 0);
 
     unsigned ticks = 0;
     while (!game_is_over(&state) && ticks < max_ticks) {

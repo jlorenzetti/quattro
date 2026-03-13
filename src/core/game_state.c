@@ -14,10 +14,10 @@ static void spawn_next(GameState *state) {
     state->next_piece = rng_next_piece(&state->rng);
 }
 
-void game_start(GameState *state, uint32_t seed) {
+void game_start(GameState *state, uint32_t seed, uint8_t start_level) {
     if (!state) return;
     board_clear(&state->board);
-    scoring_reset(&state->score);
+    scoring_reset(&state->score, start_level);
     state->phase = GAME_PHASE_RUNNING;
     rng_seed(&state->rng, seed);
     state->next_piece = rng_next_piece(&state->rng);

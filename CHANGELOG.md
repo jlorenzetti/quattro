@@ -15,3 +15,4 @@ Quattro has no version number yet; the first tagged release will be `0.1.0`.
 - Minimal presentation pass: playfield frame, HUD (`SCORE`, `LINES`, `LEVEL`), and explicit `GAME OVER` state
 - Documentation for project vision, scope, architecture, core contract, feel baseline, core spec, tooling, and roadmap
 - `compile_commands` workflow for host, C64, and merged clangd databases
+- **Phase 2.6 — Interface composition:** Title screen (block wordmark, PRESS ANY KEY), start/help screen (start level 0–9 via keys, RETURN to start; default level 5), game-over + replay prompt ("RETURN AGAIN" → StartHelp). Level-based gravity (dedicated counter, PAL 50 Hz table). A/D repeat when held (keyboard matrix). Core: `game_start(state, seed, start_level)` and scoring `initial_level`.

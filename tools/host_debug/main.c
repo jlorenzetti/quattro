@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     if (argc >= 2) seed = (uint32_t)atoi(argv[1]);
 
     GameState state;
-    game_start(&state, seed);
+    game_start(&state, seed, 0);
 
     printf("Quattro host debug — seed %lu\n", (unsigned long)seed);
     printf("j=left k=right c=CCW x=CW space=soft drop g=gravity tick q=quit\n\n");

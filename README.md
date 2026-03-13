@@ -4,11 +4,9 @@ A sober, historically-minded falling-blocks game for Commodore 64, built with co
 
 ## Status
 
-**Playable pre-alpha.**
+**Playable alpha.**
 
-The host-side core is tested, and the first C64 build is already working and playable. Quattro currently includes a minimal presentation layer with a visible playfield frame, a small HUD (score, lines, level), and an explicit game-over state.
-
-Visual identity, title flow, restart flow, custom charset, and further feel refinement are still in progress.
+Host-side core is tested; the C64 build is playable with a full interface flow: title screen, start/help (level 0–9, RETURN to start), gameplay, game over, and replay (RETURN again → start/help). Custom charset and further feel refinement remain optional later steps.
 
 ## Why
 
@@ -20,8 +18,9 @@ The answer is not a feature-rich reinterpretation, but a rigorous, minimal, high
 
 - Tested host-side core (deterministic, test-backed)
 - Playable C64 build (llvm-mos, runs in VICE)
-- Minimal board frame and score / lines / level HUD
-- Explicit game-over state
+- Title screen (block wordmark, PRESS ANY KEY) and start/help (level 0–9, RETURN start)
+- Gameplay: board frame, HUD (SCORE / LINES / LEVEL), level-based gravity
+- Game over on field + replay prompt (RETURN AGAIN → start/help)
 - Same game logic on host and C64 ([host-core contract](docs/host-core-contract.md))
 
 ## Building
@@ -32,7 +31,8 @@ The answer is not a feature-rich reinterpretation, but a rigorous, minimal, high
 
 ## Controls (C64)
 
-A / D = left / right · Z / X = rotate CCW / CW · SPACE = soft drop
+**Gameplay:** A / D = left / right (repeat when held) · Z / X = rotate CCW / CW · SPACE = soft drop  
+**Setup:** 0–9 = start level · RETURN = start game / again after game over
 
 ## Design constraints
 
