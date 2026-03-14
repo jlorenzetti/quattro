@@ -20,6 +20,46 @@ Quattro explores a simple question: what happens when you develop for Commodore 
 
 The answer is not a feature-rich reinterpretation, but a rigorous, minimal, highly playable game built with clear architecture, reproducible builds, careful optimization and obsessive attention to feel.
 
+## Host-side harness
+
+The host-side harness is intentionally austere: testable, deterministic, and slightly evocative of the Elektronika 60 lineage.
+
+```text
+quattro
+seed 12345
+
+LINES: 0000
+LEVEL: 00
+SCORE: 0000
+
+<!====================!>
+<!. . . . []. . . . . !>
+<!. . . . [][][]. . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!. . . . . . . . . . !>
+<!====================!>
+
+A/D MOVE  Z/X ROTATE  SPC DROP  G TICK  Q QUIT
+```
+
 ## Current features
 
 - Tested host-side core (deterministic, test-backed)

@@ -1,23 +1,25 @@
 /**
  * @file main.c
- * @brief Host-side debug harness: deterministic run, textual board, command injection, gravity.
+ * @brief Host-side debug harness: deterministic run, textual board, gravity.
  */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "ascii_renderer.h"
 #include "game_state.h"
 #include "types.h"
 
+static const char CONTROLS[] =
+    "A/D MOVE  Z/X ROTATE  SPC DROP  G TICK  Q QUIT";
+
 static Command char_to_command(char c) {
     switch (c) {
-        case 'j': case 'h': return CMD_MOVE_LEFT;
-        case 'k': case 'l': return CMD_MOVE_RIGHT;
-        case 'c': case 'z': return CMD_ROTATE_CCW;
-        case 'x': case 'v': return CMD_ROTATE_CW;
-        case ' ': case 's': return CMD_SOFT_DROP;
+        case 'a': return CMD_MOVE_LEFT;
+        case 'd': return CMD_MOVE_RIGHT;
+        case 'z': return CMD_ROTATE_CCW;
+        case 'x': return CMD_ROTATE_CW;
+        case ' ': return CMD_SOFT_DROP;
         case 'g': return CMD_NONE; /* gravity tick handled separately */
         default: return CMD_NONE;
     }
@@ -30,29 +32,37 @@ int main(int argc, char **argv) {
     GameState state;
     game_start(&state, seed, 0);
 
-    printf("Quattro host debug — seed %lu\n", (unsigned long)seed);
-    printf("j=left k=right c=CCW x=CW space=soft drop g=gravity tick q=quit\n\n");
+    printf("\nquattro\nseed %lu\n\n", (unsigned long)seed);
 
-    while (!game_is_over(&state)) {
-        ascii_render_board(&state);
+    for (;;) {
         ascii_render_status(&state);
-        printf("> "); fflush(stdout);
+        ascii_render_board(&state);
+        printf("\n%s\n", CONTROLS);
+
+        if (game_is_over(&state)) {
+            printf("GAME OVER — Q quit\n");
+        }
+        printf("> ");
+        fflush(stdout);
 
         int c = getchar();
         if (c == EOF || c == 'q') break;
         if (c == '\n') continue;
 
         if ((char)c == 'g') {
-            game_tick_gravity(&state);
-            continue;
+            if (!game_is_over(&state)) game_tick_gravity(&state);
+        } else if (!game_is_over(&state)) {
+            Command cmd = char_to_command((char)c);
+            if (cmd != CMD_NONE) game_apply_command(&state, cmd);
         }
-        Command cmd = char_to_command((char)c);
-        if (cmd != CMD_NONE) game_apply_command(&state, cmd);
-    }
 
-    ascii_render_board(&state);
-    ascii_render_status(&state);
-    printf("Final score: %lu\n", (unsigned long)state.score.score);
+        /* Consume rest of line so the trailing newline does not trigger another render. */
+        while (c != '\n') {
+            c = getchar();
+            if (c == EOF || c == '\n') break;
+        }
+        putchar('\n');
+    }
 
     return 0;
 }

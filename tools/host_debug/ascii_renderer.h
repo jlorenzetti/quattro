@@ -9,14 +9,13 @@
 #include "game_state.h"
 
 /**
- * Renders the current board and active piece to stdout.
- * Empty cells: '.', locked cells: '1'..'7' by piece kind, active: 'A'.
- */
-void ascii_render_board(const GameState *state);
-
-/**
- * Prints next piece preview (single line) and score/level/lines.
+ * Prints LINES, LEVEL, SCORE (fixed-width, top of screen).
  */
 void ascii_render_status(const GameState *state);
+
+/**
+ * Renders the board with <! !> borders. Empty cells: ". ", filled: "[]".
+ */
+void ascii_render_board(const GameState *state);
 
 #endif

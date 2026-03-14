@@ -10,36 +10,46 @@
 #include "game_state.h"
 #include "piece.h"
 
-static char cell_char(const GameState *state, int8_t x, int8_t y) {
-    const Board *board = &state->board;
+/**
+ * Prints a single cell (2 chars): "[]" if filled (locked or active), ". " if empty.
+ */
+static void put_cell(const GameState *state, int8_t x, int8_t y) {
+    bool filled = false;
     for (uint8_t i = 0; i < PIECE_BLOCK_COUNT; i++) {
         Point p = active_piece_get_block_position(&state->active, i);
-        if (p.x == x && p.y == y) return 'A';
-    }
-    Cell c = board_get_cell(board, x, y);
-    if (c == CELL_EMPTY) return '.';
-    return (char)('0' + c);
-}
-
-void ascii_render_board(const GameState *state) {
-    if (!state) return;
-    printf("+----------+\n");
-    for (int8_t y = 0; y < (int8_t)QUATTRO_BOARD_HEIGHT; y++) {
-        printf("|");
-        for (int8_t x = 0; x < QUATTRO_BOARD_WIDTH; x++) {
-            putchar(cell_char(state, x, y));
+        if (p.x == x && p.y == y) {
+            filled = true;
+            break;
         }
-        printf("|\n");
     }
-    printf("+----------+\n");
+    if (!filled) {
+        Cell c = board_get_cell(&state->board, x, y);
+        filled = (c != CELL_EMPTY);
+    }
+    fputs(filled ? "[]" : ". ", stdout);
 }
 
 void ascii_render_status(const GameState *state) {
     if (!state) return;
-    printf("Next: %u  Score: %lu  Lines: %u  Level: %u  %s\n",
-           (unsigned)state->next_piece,
-           (unsigned long)state->score.score,
-           (unsigned)state->score.lines_cleared,
-           (unsigned)state->score.level,
-           state->phase == GAME_PHASE_GAME_OVER ? "GAME OVER" : "");
+    printf("LINES: %04u\n", (unsigned)state->score.lines_cleared);
+    printf("LEVEL: %02u\n", (unsigned)state->score.level);
+    printf("SCORE: %04lu\n", (unsigned long)state->score.score);
+}
+
+void ascii_render_board(const GameState *state) {
+    if (!state) return;
+    putchar('\n');
+    /* Top border: <!======...======!> (2 + 20 + 2 for 10 cells * 2 chars) */
+    printf("<!");
+    for (int8_t x = 0; x < QUATTRO_BOARD_WIDTH * 2; x++) putchar('=');
+    printf("!>\n");
+    for (int8_t y = 0; y < (int8_t)QUATTRO_BOARD_HEIGHT; y++) {
+        printf("<!");
+        for (int8_t x = 0; x < QUATTRO_BOARD_WIDTH; x++)
+            put_cell(state, x, y);
+        printf("!>\n");
+    }
+    printf("<!");
+    for (int8_t x = 0; x < QUATTRO_BOARD_WIDTH * 2; x++) putchar('=');
+    printf("!>\n");
 }
