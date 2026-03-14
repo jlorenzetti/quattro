@@ -63,7 +63,7 @@ A/D MOVE  Z/X ROTATE  SPC DROP  G TICK  Q QUIT
 ## Current features
 
 - Tested host-side core (deterministic, test-backed)
-- Playable C64 build (llvm-mos, runs in VICE)
+- Playable C64 build (llvm-mos, runs in VICE). C64 gameplay uses a pseudorandom seed derived at game start; deterministic seeds remain available for host tests and optional debug builds.
 - Title screen (block wordmark, PRESS ANY KEY) and start/help (level 0–9, RETURN start)
 - Gameplay: board frame, HUD (SCORE / LINES / LEVEL), level-based gravity
 - Game over on field + replay prompt (RETURN AGAIN → start/help)
@@ -72,7 +72,7 @@ A/D MOVE  Z/X ROTATE  SPC DROP  G TICK  Q QUIT
 ## Building
 
 - **Host / tests:** `make host_debug`, `make test` (standard `cc`).
-- **C64:** `make c64` (requires [llvm-mos](https://github.com/llvm-mos/llvm-mos) with `mos-c64-clang`). Run: `make c64_run` (VICE) or load `build/quattro.prg` in your emulator.
+- **C64:** `make c64` (requires [llvm-mos](https://github.com/llvm-mos/llvm-mos) with `mos-c64-clang`). Run: `make c64_run` (VICE) or load `build/quattro.prg` in your emulator. For a reproducible debug build: `make c64_fixed_seed` or `make c64 C64_DEFS="-DQUATTRO_FIXED_SEED=12345"`.
 - **clangd:** `make compdb` (host) or `make compdb-all` (host + C64). Requires [Bear](https://github.com/rizsotto/Bear); generated files are not committed.
 - **Browser demo (experimental):** Workflow builds and deploys to GitHub Pages. See [web-src/README.md](web-src/README.md).
 

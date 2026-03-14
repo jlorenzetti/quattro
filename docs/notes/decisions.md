@@ -46,3 +46,12 @@ Custom charset remains a valid direction for Phase 2.5, but implementation is bl
 **Rule:** Do not test charset changes inside the full Quattro game until the probe program validates VIC charset switching.
 
 **Reference:** `docs/notes/custom-charset-investigation.md`
+
+---
+
+## 2026-03-14 — C64 runtime seed initialization
+**Status:** accepted
+
+**Decision**
+- Mainline C64 gameplay seeds the PRNG pseudorandomly from runtime timing (jiffy clock at RETURN in start/help, mixed with start level).
+- Deterministic seeds remain the default for host tests and are available for C64 debug builds via `QUATTRO_FIXED_SEED` at compile time (e.g. `make c64_fixed_seed` or `make c64 C64_DEFS="-DQUATTRO_FIXED_SEED=12345"`).
