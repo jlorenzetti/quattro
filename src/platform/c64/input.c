@@ -57,13 +57,21 @@ bool input_any_key_poll(void) {
 #define PETSCII_0      0x30u
 #define PETSCII_9      0x39u
 
-void input_poll_start_help(uint8_t *digit, bool *start) {
+void input_poll_start_help(uint8_t *digit, bool *start, bool *level_down, bool *level_up) {
     SCNKEY();
     {
         unsigned char c = GETIN();
         if (c == 0) return;
         if (c == PETSCII_RETURN) {
             *start = true;
+            return;
+        }
+        if (c == 'A' && level_down != NULL) {
+            *level_down = true;
+            return;
+        }
+        if (c == 'D' && level_up != NULL) {
+            *level_up = true;
             return;
         }
         if (c >= PETSCII_0 && c <= PETSCII_9 && digit != NULL) {

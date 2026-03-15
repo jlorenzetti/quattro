@@ -57,7 +57,9 @@ int main(void) {
             {
                 uint8_t digit = 255;
                 bool start = false;
-                input_poll_start_help(&digit, &start);
+                bool level_down = false;
+                bool level_up = false;
+                input_poll_start_help(&digit, &start, &level_down, &level_up);
                 if (start) {
                     video_clear();
                     game_start(&state, seed_generate(start_level, start_help_frames), start_level);
@@ -65,6 +67,10 @@ int main(void) {
                     app_state = APP_GAME;
                 } else if (digit <= 9) {
                     start_level = digit;
+                } else if (level_down && start_level > 0) {
+                    start_level--;
+                } else if (level_up && start_level < 9) {
+                    start_level++;
                 }
             }
             break;

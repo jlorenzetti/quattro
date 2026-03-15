@@ -6,14 +6,60 @@
   <title>Quattro — browser demo</title>
   <style>
     html, body { margin: 0; width: 100%; height: 100%; background: #000; }
+    #demo { display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 0; }
+    #emulator-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
     #canvas { display: block; width: 100%; height: 100%; border: 0; object-fit: contain; image-rendering: pixelated; image-rendering: crisp-edges; }
-    #overlay { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+    #overlay { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; z-index: 1; }
     #overlay span { color: #888; font: bold 1.3em system-ui, sans-serif; }
+
+    /* Touch controls — browser-side utility panel, below playfield only */
+    #touch-controls {
+      display: none;
+      flex: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #1a1a1a;
+      border-top: 1px solid #444;
+      padding: 0.5em 0.75em 0.6em;
+      gap: 0.4em;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: none;
+    }
+    #touch-controls.visible { display: flex; }
+    .touch-row { display: flex; gap: 0.4em; justify-content: center; flex-wrap: wrap; }
+    .touch-btn {
+      background: transparent;
+      color: #eee;
+      border: 1px solid #555;
+      font: 0.85em system-ui, sans-serif;
+      text-transform: uppercase;
+      padding: 0.4em 0.65em;
+      min-width: 2.8em;
+      min-height: 2.2em;
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+      border-radius: 2px;
+    }
+    .touch-btn:active, .touch-btn.pressed {
+      background: #0ff;
+      color: #000;
+      border-color: #0ff;
+    }
   </style>
 </head>
 <body>
   <div id="overlay"><span id="overlay-text">CLICK TO START</span></div>
-  <canvas id="canvas"></canvas>
+  <div id="demo">
+    <div id="emulator-wrap"><canvas id="canvas"></canvas></div>
+    <div id="touch-controls" aria-label="Touch controls">
+      <div class="touch-row"><button type="button" class="touch-btn hold" data-key="a">LEFT</button><button type="button" class="touch-btn hold" data-key="d">RIGHT</button></div>
+      <div class="touch-row"><button type="button" class="touch-btn" data-key="z">CCW</button><button type="button" class="touch-btn" data-key="x">CW</button><button type="button" class="touch-btn" data-key="space">DROP</button><button type="button" class="touch-btn" data-key="return">RET</button></div>
+    </div>
+  </div>
 
   <script>
     (function () {
@@ -65,6 +111,82 @@
       }
 
       overlay.addEventListener('click', start, { once: true });
+
+      /* Touch accessibility layer: stateless, emits canonical keys only. */
+      (function () {
+        var SDL_KEYSYM = { return: 13, space: 32, a: 97, d: 100, z: 122, x: 120 };
+
+        function sendKeyDown(keySym) {
+          if (typeof Module !== 'undefined' && typeof Module.ccall === 'function') {
+            try { Module.ccall('keyboard_key_pressed', 'undefined', ['number', 'number'], [keySym, 0]); } catch (err) {}
+          }
+        }
+        function sendKeyUp(keySym) {
+          if (typeof Module !== 'undefined' && typeof Module.ccall === 'function') {
+            try { Module.ccall('keyboard_key_released', 'undefined', ['number', 'number'], [keySym, 0]); } catch (err) {}
+          }
+        }
+
+        function keySym(dataKey) { return SDL_KEYSYM[dataKey]; }
+
+        function onPointerDown(btn, e) {
+          e.preventDefault();
+          btn.classList.add('pressed');
+          var sym = keySym(btn.getAttribute('data-key'));
+          if (sym == null) return;
+          sendKeyDown(sym);
+          if (!btn.classList.contains('hold')) {
+            /* Defer keyup so the emulator can sample the key (it polls per frame). */
+            setTimeout(function () { sendKeyUp(sym); }, 50);
+          }
+        }
+
+        function onPointerUp(btn, e) {
+          e.preventDefault();
+          btn.classList.remove('pressed');
+          if (!btn.classList.contains('hold')) return;
+          var sym = keySym(btn.getAttribute('data-key'));
+          if (sym != null) sendKeyUp(sym);
+        }
+
+        var touchControls = document.getElementById('touch-controls');
+        touchControls.addEventListener('pointerdown', function (e) {
+          var btn = e.target.closest('.touch-btn');
+          if (!btn) return;
+          onPointerDown(btn, e);
+        }, { passive: false });
+        touchControls.addEventListener('pointerup', function (e) {
+          var btn = e.target.closest('.touch-btn');
+          if (!btn) return;
+          onPointerUp(btn, e);
+        }, { passive: false });
+        touchControls.addEventListener('pointerleave', function (e) {
+          var btn = e.target.closest('.touch-btn');
+          if (!btn) return;
+          if (btn.classList.contains('pressed')) onPointerUp(btn, e);
+        }, { passive: false });
+        touchControls.addEventListener('pointercancel', function (e) {
+          var btn = e.target.closest('.touch-btn');
+          if (!btn) return;
+          if (btn.classList.contains('pressed')) onPointerUp(btn, e);
+        }, { passive: false });
+
+        function showTouchControlsWhenRelevant() {
+          var narrow = window.matchMedia('(max-width: 768px)').matches;
+          var touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+          var show = (narrow || touch) && !document.getElementById('overlay');
+          touchControls.classList.toggle('visible', show);
+        }
+        if (!document.getElementById('overlay')) showTouchControlsWhenRelevant();
+        var checkShow = setInterval(function () {
+          if (document.getElementById('overlay')) return;
+          clearInterval(checkShow);
+          showTouchControlsWhenRelevant();
+          var mq = window.matchMedia('(max-width: 768px)');
+          mq.addEventListener('change', showTouchControlsWhenRelevant);
+          window.addEventListener('resize', showTouchControlsWhenRelevant);
+        }, 200);
+      })();
     })();
   </script>
 </body>
