@@ -11,7 +11,7 @@
 #include "piece.h"
 
 /**
- * Prints a single cell (2 chars): "[]" if filled (locked or active), ". " if empty.
+ * Prints a single cell (2 chars): "[]" if filled (locked or active), " ." if empty.
  */
 static void put_cell(const GameState *state, int8_t x, int8_t y) {
     bool filled = false;
@@ -26,7 +26,7 @@ static void put_cell(const GameState *state, int8_t x, int8_t y) {
         Cell c = board_get_cell(&state->board, x, y);
         filled = (c != CELL_EMPTY);
     }
-    fputs(filled ? "[]" : ". ", stdout);
+    fputs(filled ? "[]" : " .", stdout);
 }
 
 void ascii_render_status(const GameState *state) {
@@ -39,10 +39,7 @@ void ascii_render_status(const GameState *state) {
 void ascii_render_board(const GameState *state) {
     if (!state) return;
     putchar('\n');
-    /* Top border: <!======...======!> (2 + 20 + 2 for 10 cells * 2 chars) */
-    printf("<!");
-    for (int8_t x = 0; x < QUATTRO_BOARD_WIDTH * 2; x++) putchar('=');
-    printf("!>\n");
+    /* Well open at top; each row: <! ... !> */
     for (int8_t y = 0; y < (int8_t)QUATTRO_BOARD_HEIGHT; y++) {
         printf("<!");
         for (int8_t x = 0; x < QUATTRO_BOARD_WIDTH; x++)

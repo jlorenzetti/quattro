@@ -14,7 +14,7 @@
 void ascii_render_status(const GameState *state);
 
 /**
- * Renders the board with <! !> borders. Empty cells: ". ", filled: "[]".
+ * Renders the board with <! !> borders. Empty cells: " .", filled: "[]".
  */
 void ascii_render_board(const GameState *state);
 
