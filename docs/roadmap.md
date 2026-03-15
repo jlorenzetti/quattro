@@ -52,7 +52,23 @@
 - Gravity: dedicated counter, PAL-friendly table (classic console pacing reference). Input: A/D repeat when held (keyboard matrix).
 
 ## Phase 3 — Feel and performance
-- tune responsiveness
+
+**Input feel baseline**
+
+- remove KERNAL-dependent gameplay repeat
+- define a Quattro-owned keyboard input model
+- tune DAS and lateral repeat
+- define soft-drop hold behaviour (SPACE remains soft drop)
+- validate input harshness / controllability through playtest
+
+**Target control schemes**
+
+- add joystick support (after keyboard feel is stabilized)
+- validate keyboard vs joystick feel
+- keep mappings minimal and platform-native
+
+**Performance**
+
 - reduce unnecessary writes
 - profile hotspots
 - move critical paths lower-level only if justified
