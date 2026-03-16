@@ -6,6 +6,7 @@
 #include <stddef.h>
 
 #include "input.h"
+#include "input_model.h"
 
 /** KERNAL: scan keyboard, fill buffer. */
 #define SCNKEY ((void (*)(void))0xFF9F)
@@ -26,24 +27,40 @@ static bool key_held_d(void) {
     return (CIA1_PRB & 0x04u) == 0u;
 }
 
+static InputModel g_input_model;
+
+void input_init(void) {
+    input_model_init(&g_input_model);
+}
+
+void input_reset_gameplay(void) {
+    input_model_reset(&g_input_model);
+}
+
 Command input_poll(void) {
     SCNKEY();
     {
+        /* For now, we still use GETIN to detect Z/X/SPACE presses. */
         unsigned char c = GETIN();
+        InputFrame frame = {0};
+
+        /* Lateral held state uses CIA matrix (independent of KERNAL repeat). */
+        CIA1_PRA = 0xFFu;
+        frame.move_left_held = key_held_a();
+        CIA1_PRA = 0xFFu;
+        frame.move_right_held = key_held_d();
+        CIA1_PRA = 0xFFu;
+
         if (c != 0) {
-            if (c == 'A') return CMD_MOVE_LEFT;
-            if (c == 'D') return CMD_MOVE_RIGHT;
-            if (c == 'Z') return CMD_ROTATE_CCW;
-            if (c == 'X') return CMD_ROTATE_CW;
-            if (c == ' ') return CMD_SOFT_DROP;
-            return CMD_NONE;
+            if (c == 'A') frame.move_left_held = true;
+            else if (c == 'D') frame.move_right_held = true;
+            else if (c == 'Z') frame.rotate_ccw_held = true;
+            else if (c == 'X') frame.rotate_cw_held = true;
+            else if (c == ' ') frame.soft_drop_held = true;
         }
+
+        return input_model_step(&g_input_model, &frame);
     }
-    CIA1_PRA = 0xFFu;
-    if (key_held_a()) { CIA1_PRA = 0xFFu; return CMD_MOVE_LEFT; }
-    if (key_held_d()) { CIA1_PRA = 0xFFu; return CMD_MOVE_RIGHT; }
-    CIA1_PRA = 0xFFu;
-    return CMD_NONE;
 }
 
 bool input_any_key_poll(void) {

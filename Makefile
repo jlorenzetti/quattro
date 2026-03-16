@@ -1,7 +1,8 @@
 .PHONY: help host_debug test c64 c64_fixed_seed c64_run compdb compdb-host compdb-c64 compdb-all clean
 
 CORE_SRC := src/core/board.c src/core/game_state.c src/core/piece.c \
-	src/core/rng.c src/core/rules.c src/core/scoring.c
+	src/core/rng.c src/core/rules.c src/core/scoring.c \
+	src/core/input_model.c
 CORE_INC := -Isrc/core
 
 C64_PLATFORM_SRC := src/platform/c64/main.c src/platform/c64/video.c \

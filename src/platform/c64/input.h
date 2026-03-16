@@ -2,7 +2,7 @@
  * @file input.h
  * @brief C64 keyboard polling for Quattro.
  *
- * Gameplay: A/D move, Z/X rotate, SPACE drop.
+ * Gameplay: A/D move, Z/X rotate, SPACE soft drop.
  * Setup/transitions: 0-9 set level, RETURN start / again.
  */
 
@@ -13,8 +13,21 @@
 #include <stdint.h>
 #include "types.h"
 
-/** Polls keyboard once; returns Command or CMD_NONE. */
+/** Initializes C64 input model state (must be called before gameplay). */
+void input_init(void);
+
+/**
+ * Polls keyboard once for gameplay and returns a Command for this frame.
+ *
+ * This uses Quattro's internal input model (DAS / repeat / edge rotation)
+ * rather than relying on KERNAL key repeat semantics.
+ */
 Command input_poll(void);
+
+/**
+ * Resets gameplay-related input state between games (DAS / repeat timers).
+ */
+void input_reset_gameplay(void);
 
 /** Returns true if any key was pressed (consumes the key). Used for title screen. */
 bool input_any_key_poll(void);

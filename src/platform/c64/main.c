@@ -33,6 +33,7 @@ int main(void) {
     uint16_t start_help_frames = 0;
 
     video_init();
+    input_init();
 
     for (;;) {
         switch (app_state) {
@@ -63,6 +64,7 @@ int main(void) {
                 if (start) {
                     video_clear();
                     game_start(&state, seed_generate(start_level, start_help_frames), start_level);
+                    input_reset_gameplay();
                     gravity_counter = 0;
                     app_state = APP_GAME;
                 } else if (digit <= 9) {
