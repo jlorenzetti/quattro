@@ -45,12 +45,24 @@ static uint32_t g_last_hud_score = 0xFFFFFFFFu;
 static uint16_t g_last_hud_lines = 0xFFFFu;
 static uint8_t g_last_hud_level = 0xFFu;
 
+/* Game-over/replay prompt draw cache. */
+static bool g_game_over_band_drawn = false;
+static bool g_replay_prompt_drawn = false;
+
+/* Start-help draw cache. */
+static bool g_start_help_labels_drawn = false;
+static uint8_t g_last_start_level = 0xFFu;
+
 static void invalidate_caches(void) {
     g_board_cache_valid = false;
     g_hud_labels_drawn = false;
     g_last_hud_score = 0xFFFFFFFFu;
     g_last_hud_lines = 0xFFFFu;
     g_last_hud_level = 0xFFu;
+    g_game_over_band_drawn = false;
+    g_replay_prompt_drawn = false;
+    g_start_help_labels_drawn = false;
+    g_last_start_level = 0xFFu;
 }
 
 void video_init(void) {
@@ -148,6 +160,8 @@ void video_draw_hud(const GameState *state) {
 }
 
 void video_draw_game_over(void) {
+    if (g_game_over_band_drawn) return;
+
     unsigned int r, c;
     unsigned int board_left = BOARD_SCREEN_X;
     unsigned int board_right = BOARD_SCREEN_X + QUATTRO_BOARD_WIDTH - 1;
@@ -162,6 +176,8 @@ void video_draw_game_over(void) {
     }
     /* "GAME  OVER" (space between) in reverse, centred on middle row. */
     put_string_reverse_at(15, row_mid, "GAME  OVER", 10, COLOR_BORDER);
+
+    g_game_over_band_drawn = true;
 }
 
 static void clear_screen(void) {
@@ -226,34 +242,62 @@ void video_draw_title(void) {
 }
 
 void video_draw_start_help(uint8_t start_level) {
+    /* Draw all static help text once, then update only the level digit. */
     unsigned int base_row = 8;
     unsigned int col_start;
     const unsigned int block_w = 14;
 
-    clear_screen();
     col_start = (C64_SCREEN_COLS - 14) / 2;
-    put_string_at(col_start, base_row, "START LEVEL  ", 13, COLOR_HUD);
-    C64_SCREEN_RAM[C64_SCREEN_OFFSET(col_start + 13, base_row)] =
-        (unsigned char)('0' + (start_level % 10));
-    C64_COLOR_RAM[C64_SCREEN_OFFSET(col_start + 13, base_row)] = COLOR_HUD;
 
-    base_row += 2;
-    col_start = (C64_SCREEN_COLS - block_w) / 2;
-    put_string_at(col_start, base_row, "0-9     SET", 11, COLOR_HUD);
-    put_string_at(col_start, base_row + 1, "RETURN  START", 13, COLOR_HUD);
+    /*
+     * When transitioning from game-over/replay back to start-help, we may
+     * not get video_clear() before this runs. If those UI caches were
+     * populated, force a full clear so stale graphics cannot leak.
+     */
+    if (g_game_over_band_drawn || g_replay_prompt_drawn) {
+        clear_screen();
+        invalidate_caches();
+        /* invalidate_caches() resets g_start_help_labels_drawn too. */
+    }
 
-    base_row += 3;
-    put_string_at(col_start, base_row, "A/D     MOVE", 12, COLOR_HUD);
-    put_string_at(col_start, base_row + 1, "Z/X     ROTATE", 14, COLOR_HUD);
-    put_string_at(col_start, base_row + 2, "SPACE   DROP", 12, COLOR_HUD);
+    if (!g_start_help_labels_drawn) {
+        clear_screen();
+
+        put_string_at(col_start, base_row, "START LEVEL  ", 13, COLOR_HUD);
+
+        base_row += 2;
+        col_start = (C64_SCREEN_COLS - block_w) / 2;
+        put_string_at(col_start, base_row, "0-9     SET", 11, COLOR_HUD);
+        put_string_at(col_start, base_row + 1, "RETURN  START", 13, COLOR_HUD);
+
+        base_row += 3;
+        put_string_at(col_start, base_row, "A/D     MOVE", 12, COLOR_HUD);
+        put_string_at(col_start, base_row + 1, "Z/X     ROTATE", 14, COLOR_HUD);
+        put_string_at(col_start, base_row + 2, "SPACE   DROP", 12, COLOR_HUD);
+
+        g_start_help_labels_drawn = true;
+        g_last_start_level = 0xFFu;
+    }
+
+    if (start_level != g_last_start_level) {
+        /* Replace last space of "START LEVEL  " (index 12) with the digit. */
+        C64_SCREEN_RAM[C64_SCREEN_OFFSET(col_start + 12, 8)] =
+            (unsigned char)('0' + (start_level % 10));
+        C64_COLOR_RAM[C64_SCREEN_OFFSET(col_start + 12, 8)] = COLOR_HUD;
+        g_last_start_level = start_level;
+    }
 }
 
 void video_draw_replay_prompt(void) {
+    if (g_replay_prompt_drawn) return;
+
     const char *msg = "RETURN AGAIN";
     unsigned int len = 12;
     unsigned int col = (C64_SCREEN_COLS - len) / 2;
     unsigned int row = C64_SCREEN_ROWS - 1;
     put_string_at(col, row, msg, len, COLOR_HUD);
+
+    g_replay_prompt_drawn = true;
 }
 
 void video_draw_board(const GameState *state) {
