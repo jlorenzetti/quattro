@@ -36,8 +36,8 @@ tools/host_debug/host_debug: tools/host_debug/main.c tools/host_debug/ascii_rend
 test: tests/test_runner
 	./tests/test_runner
 
-tests/test_runner: tests/test_runner.c tests/core/test_board.c tests/core/test_piece.c tests/core/test_rules.c tests/core/test_game_state.c tests/test_gravity.c src/platform/c64/gravity.c $(CORE_SRC)
-	$(CC) -o $@ $(CORE_INC) -Itests -Itests/core -Isrc/platform/c64 tests/test_runner.c tests/core/test_board.c tests/core/test_piece.c tests/core/test_rules.c tests/core/test_game_state.c tests/test_gravity.c src/platform/c64/gravity.c $(CORE_SRC)
+tests/test_runner: tests/test_runner.c tests/core/test_board.c tests/core/test_piece.c tests/core/test_rules.c tests/core/test_game_state.c tests/core/test_input_model.c tests/test_gravity.c src/platform/c64/gravity.c $(CORE_SRC)
+	$(CC) -o $@ $(CORE_INC) -Itests -Itests/core -Isrc/platform/c64 tests/test_runner.c tests/core/test_board.c tests/core/test_piece.c tests/core/test_rules.c tests/core/test_game_state.c tests/core/test_input_model.c tests/test_gravity.c src/platform/c64/gravity.c $(CORE_SRC)
 
 c64: $(C64_PRG)
 

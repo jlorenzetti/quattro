@@ -12,6 +12,7 @@ extern int test_rules_run(void);
 extern int test_game_state_run(void);
 extern int test_game_state_full_run(void);
 extern int test_gravity_run(void);
+extern int test_input_model_run(void);
 
 int main(void) {
     int failed = 0;
@@ -21,6 +22,10 @@ int main(void) {
     if (test_game_state_run() != 0) { fprintf(stderr, "FAIL game_state\n"); failed = 1; }
     if (test_game_state_full_run() != 0) { fprintf(stderr, "FAIL game_state_full\n"); failed = 1; }
     if (test_gravity_run() != 0) { fprintf(stderr, "FAIL gravity\n"); failed = 1; }
+    {
+        int r = test_input_model_run();
+        if (r != 0) { fprintf(stderr, "FAIL input_model (%d)\n", r); failed = 1; }
+    }
     if (!failed) printf("OK\n");
     return failed ? EXIT_FAILURE : EXIT_SUCCESS;
 }

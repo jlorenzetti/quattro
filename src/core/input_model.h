@@ -51,6 +51,13 @@ typedef struct InputConfig {
 typedef struct InputModel {
     InputConfig config;
 
+    /** Dominant lateral direction when both are held. */
+    enum {
+        INPUT_LATERAL_NONE = 0,
+        INPUT_LATERAL_LEFT,
+        INPUT_LATERAL_RIGHT
+    } lateral_dominant;
+
     /* Lateral timers. */
     uint16_t left_frames_held;
     uint16_t right_frames_held;
@@ -68,6 +75,10 @@ typedef struct InputModel {
     bool prev_rotate_cw_held;
     bool prev_rotate_ccw_held;
 
+    /* Lateral edge detection (newest held direction wins). */
+    bool prev_move_left_held;
+    bool prev_move_right_held;
+
     /* Global frame counter for this model (monotonic, wraps naturally). */
     uint32_t frame_counter;
 } InputModel;
@@ -76,8 +87,8 @@ typedef struct InputModel {
  * @brief Initializes an InputModel with Phase 3 baseline configuration.
  *
  * Baseline:
- * - Lateral: DAS delay 12 frames, repeat interval 4 frames.
- * - Soft drop: delay 3 frames, repeat interval 2 frames.
+ * - Lateral: DAS delay 12 frames, repeat interval 3 frames.
+ * - Soft drop: delay 3 frames, repeat interval 1 frame.
  */
 void input_model_init(InputModel *model);
 
