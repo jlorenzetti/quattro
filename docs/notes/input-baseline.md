@@ -13,8 +13,8 @@ It is a *baseline for implementation and playtest*, not a final promise.
 
 #### Lateral movement (PAL-inspired)
 
-- **DAS initial delay**: **12 frames**
-- **Auto-repeat interval**: **3 frames**
+- **DAS initial delay**: **6 frames**
+- **Auto-repeat interval**: **2 frames**
 
 #### Soft drop (SPACE)
 

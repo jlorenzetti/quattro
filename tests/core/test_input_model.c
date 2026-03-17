@@ -55,8 +55,8 @@ int test_input_model_run(void) {
         f.move_right_held = false;
         if (expect(input_model_step(&m, &f), CMD_MOVE_LEFT)) return 24;
 
-        /* Fresh DAS: no further lateral moves for 11 frames after the handoff press frame. */
-        for (int i = 0; i < 11; i++) {
+        /* Fresh DAS (6 frames): no further lateral moves for 5 frames after the handoff press frame. */
+        for (int i = 0; i < 5; i++) {
             Command c = input_model_step(&m, &f);
             if (c == CMD_MOVE_LEFT || c == CMD_MOVE_RIGHT) return 25;
         }
@@ -64,25 +64,24 @@ int test_input_model_run(void) {
 
     input_model_reset(&m);
 
-    /* Lateral tuning: repeat interval is 3 frames, delay remains 12. */
+    /* Lateral tuning: repeat interval is 2 frames, DAS delay 6. */
     {
         InputFrame f = {0};
         f.move_left_held = true;
 
         if (expect(input_model_step(&m, &f), CMD_MOVE_LEFT)) return 31;
 
-        /* No auto-repeat during the next 11 frames (held frames 2..12). */
-        for (int i = 0; i < 11; i++) {
+        /* No auto-repeat during the next 5 frames (held frames 2..6). */
+        for (int i = 0; i < 5; i++) {
             if (expect(input_model_step(&m, &f), CMD_NONE)) return 32;
         }
 
-        /* First repeat step occurs when held frames become 13. */
+        /* First repeat step occurs when held frames become 7. */
         if (expect(input_model_step(&m, &f), CMD_MOVE_LEFT)) return 33;
 
-        /* Then repeats every 3 frames. */
+        /* Then repeats every 2 frames. */
         if (expect(input_model_step(&m, &f), CMD_NONE)) return 34;
-        if (expect(input_model_step(&m, &f), CMD_NONE)) return 35;
-        if (expect(input_model_step(&m, &f), CMD_MOVE_LEFT)) return 36;
+        if (expect(input_model_step(&m, &f), CMD_MOVE_LEFT)) return 35;
     }
 
     input_model_reset(&m);

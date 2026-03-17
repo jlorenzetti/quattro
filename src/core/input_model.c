@@ -7,8 +7,8 @@
 
 static void input_model_init_config(InputConfig *config) {
     if (!config) return;
-    config->das_delay_frames = 12u;
-    config->das_repeat_frames = 3u;
+    config->das_delay_frames = 6u;
+    config->das_repeat_frames = 2u;
     config->soft_drop_delay_frames = 3u;
     config->soft_drop_repeat_frames = 1u;
 }

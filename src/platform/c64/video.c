@@ -34,6 +34,25 @@
 #define C64_BORDER_COL    (*(volatile unsigned char *)0xD020)
 #define C64_BG_COL       (*(volatile unsigned char *)0xD021)
 
+/* Board draw cache (visible cells only). */
+static unsigned char g_last_board_char[QUATTRO_BOARD_WIDTH * QUATTRO_VISIBLE_HEIGHT];
+static unsigned char g_last_board_color[QUATTRO_BOARD_WIDTH * QUATTRO_VISIBLE_HEIGHT];
+static bool g_board_cache_valid = false;
+
+/* HUD draw cache. */
+static bool g_hud_labels_drawn = false;
+static uint32_t g_last_hud_score = 0xFFFFFFFFu;
+static uint16_t g_last_hud_lines = 0xFFFFu;
+static uint8_t g_last_hud_level = 0xFFu;
+
+static void invalidate_caches(void) {
+    g_board_cache_valid = false;
+    g_hud_labels_drawn = false;
+    g_last_hud_score = 0xFFFFFFFFu;
+    g_last_hud_lines = 0xFFFFu;
+    g_last_hud_level = 0xFFu;
+}
+
 void video_init(void) {
     C64_BORDER_COL = COLOR_EMPTY;
     C64_BG_COL = COLOR_EMPTY;
@@ -42,6 +61,7 @@ void video_init(void) {
         C64_SCREEN_RAM[i] = CHAR_EMPTY;
         C64_COLOR_RAM[i] = COLOR_EMPTY;
     }
+    invalidate_caches();
 }
 
 void video_draw_frame(void) {
@@ -101,14 +121,30 @@ static void put_number(unsigned int col, unsigned int row, uint32_t value, unsig
 void video_draw_hud(const GameState *state) {
     const ScoreState *s = &state->score;
     unsigned int row = HUD_SCREEN_ROW;
-    put_string(HUD_SCREEN_COL, row, "SCORE", 5);
-    put_number(HUD_SCREEN_COL + 6, row, (uint32_t)s->score, 6);
+    if (!g_hud_labels_drawn) {
+        put_string(HUD_SCREEN_COL, row, "SCORE", 5);
+    }
+    if (!g_hud_labels_drawn || g_last_hud_score != (uint32_t)s->score) {
+        put_number(HUD_SCREEN_COL + 6, row, (uint32_t)s->score, 6);
+        g_last_hud_score = (uint32_t)s->score;
+    }
     row += 2;
-    put_string(HUD_SCREEN_COL, row, "LINES", 5);
-    put_number(HUD_SCREEN_COL + 6, row, (uint32_t)s->lines_cleared, 4);
+    if (!g_hud_labels_drawn) {
+        put_string(HUD_SCREEN_COL, row, "LINES", 5);
+    }
+    if (!g_hud_labels_drawn || g_last_hud_lines != (uint16_t)s->lines_cleared) {
+        put_number(HUD_SCREEN_COL + 6, row, (uint32_t)s->lines_cleared, 4);
+        g_last_hud_lines = (uint16_t)s->lines_cleared;
+    }
     row += 2;
-    put_string(HUD_SCREEN_COL, row, "LEVEL", 5);
-    put_number(HUD_SCREEN_COL + 6, row, (uint32_t)s->level, 2);
+    if (!g_hud_labels_drawn) {
+        put_string(HUD_SCREEN_COL, row, "LEVEL", 5);
+    }
+    if (!g_hud_labels_drawn || g_last_hud_level != (uint8_t)s->level) {
+        put_number(HUD_SCREEN_COL + 6, row, (uint32_t)s->level, 2);
+        g_last_hud_level = (uint8_t)s->level;
+    }
+    g_hud_labels_drawn = true;
 }
 
 void video_draw_game_over(void) {
@@ -138,6 +174,7 @@ static void clear_screen(void) {
 
 void video_clear(void) {
     clear_screen();
+    invalidate_caches();
 }
 
 /** Block wordmark: 4x6 per letter, one empty column between letters. */
@@ -229,31 +266,50 @@ void video_draw_board(const GameState *state) {
         ay[i] = p.y;
     }
 
-    /* Visible rows only: board y in [QUATTRO_HIDDEN_ROWS, QUATTRO_BOARD_HEIGHT) -> screen row 0..19 + BOARD_SCREEN_Y */
+    /*
+     * Visible rows only: board y in [QUATTRO_HIDDEN_ROWS, QUATTRO_BOARD_HEIGHT)
+     * -> screen row 0..19 + BOARD_SCREEN_Y.
+     *
+     * Performance: avoid unnecessary writes by caching last drawn char/color per cell.
+     */
     for (int8_t by = (int8_t)QUATTRO_HIDDEN_ROWS; by < (int8_t)QUATTRO_BOARD_HEIGHT; by++) {
         unsigned int screen_row = (unsigned int)(BOARD_SCREEN_Y + (int)(by - (int8_t)QUATTRO_HIDDEN_ROWS));
+        unsigned int cache_row = (unsigned int)(by - (int8_t)QUATTRO_HIDDEN_ROWS);
         for (int8_t bx = 0; bx < QUATTRO_BOARD_WIDTH; bx++) {
             unsigned int screen_col = (unsigned int)(BOARD_SCREEN_X + (int)bx);
             unsigned int offset = C64_SCREEN_OFFSET((int)screen_col, (int)screen_row);
+            unsigned int cache_index = cache_row * QUATTRO_BOARD_WIDTH + (unsigned int)bx;
 
             int is_active = 0;
             for (uint8_t i = 0; i < PIECE_BLOCK_COUNT; i++) {
                 if (ax[i] == bx && ay[i] == by) { is_active = 1; break; }
             }
 
+            unsigned char desired_char;
+            unsigned char desired_color;
             if (is_active) {
-                C64_SCREEN_RAM[offset] = CHAR_BLOCK;
-                C64_COLOR_RAM[offset] = COLOR_ACTIVE;
+                desired_char = CHAR_BLOCK;
+                desired_color = COLOR_ACTIVE;
             } else {
                 Cell c = board_get_cell(board, bx, by);
                 if (c != CELL_EMPTY) {
-                    C64_SCREEN_RAM[offset] = CHAR_BLOCK;
-                    C64_COLOR_RAM[offset] = COLOR_LOCKED;
+                    desired_char = CHAR_BLOCK;
+                    desired_color = COLOR_LOCKED;
                 } else {
-                    C64_SCREEN_RAM[offset] = CHAR_EMPTY;
-                    C64_COLOR_RAM[offset] = COLOR_EMPTY;
+                    desired_char = CHAR_EMPTY;
+                    desired_color = COLOR_EMPTY;
                 }
+            }
+
+            if (!g_board_cache_valid ||
+                g_last_board_char[cache_index] != desired_char ||
+                g_last_board_color[cache_index] != desired_color) {
+                C64_SCREEN_RAM[offset] = desired_char;
+                C64_COLOR_RAM[offset] = desired_color;
+                g_last_board_char[cache_index] = desired_char;
+                g_last_board_color[cache_index] = desired_color;
             }
         }
     }
+    g_board_cache_valid = true;
 }
