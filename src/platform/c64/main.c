@@ -118,6 +118,7 @@ int main(void) {
             if (input_return_pressed()) {
                 start_help_pending_draw = 1;
                 start_help_frames = 0;
+                input_reset_start_help();
                 app_state = APP_START_HELP;
             }
             break;
