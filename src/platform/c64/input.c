@@ -77,6 +77,14 @@ void input_reset_gameplay(void) {
     input_model_reset(&g_input_model);
 }
 
+/**
+ * @brief Resets UI-related joystick edge-detection state.
+ *
+ * Call when entering APP_START_HELP to avoid joystick-held carry-over from
+ * TITLE causing immediate START.
+ */
+void input_reset_start_help(void);
+
 Command input_poll(void) {
     SCNKEY();
     {
@@ -141,6 +149,15 @@ bool input_any_key_poll(void) {
 static bool g_prev_joy_left = false;
 static bool g_prev_joy_right = false;
 static bool g_prev_joy_fire = false;
+static bool g_start_help_edge_init_done = false;
+
+void input_reset_start_help(void) {
+    g_start_help_edge_init_done = false;
+    /* Also keep prev joystick states consistent with edge init. */
+    g_prev_joy_left = false;
+    g_prev_joy_right = false;
+    g_prev_joy_fire = false;
+}
 
 void input_poll_start_help(uint8_t *digit, bool *start, bool *level_down, bool *level_up) {
     SCNKEY();
@@ -169,6 +186,19 @@ void input_poll_start_help(uint8_t *digit, bool *start, bool *level_down, bool *
         bool left = (joy & 0x04u) == 0u;
         bool right = (joy & 0x08u) == 0u;
         bool fire = (joy & 0x10u) == 0u;
+
+        /* Initialize edge detection on first call in this screen.
+         * This prevents a joystick held during TITLE from immediately
+         * triggering START on the first frame in APP_START_HELP.
+         */
+        if (!g_start_help_edge_init_done) {
+            g_prev_joy_left = left;
+            g_prev_joy_right = right;
+            g_prev_joy_fire = fire;
+            g_start_help_edge_init_done = true;
+            return;
+        }
+
         if (left && !g_prev_joy_left && level_down != NULL) *level_down = true;
         if (right && !g_prev_joy_right && level_up != NULL) *level_up = true;
         if (fire && !g_prev_joy_fire) *start = true;

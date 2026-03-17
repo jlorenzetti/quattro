@@ -29,6 +29,11 @@ Command input_poll(void);
  */
 void input_reset_gameplay(void);
 
+/**
+ * Resets UI-related joystick edge-detection when entering APP_START_HELP.
+ */
+void input_reset_start_help(void);
+
 /** Returns true if any key was pressed (consumes the key). Used for title screen. */
 bool input_any_key_poll(void);
 
