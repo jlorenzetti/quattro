@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Quattro — browser demo</title>
   <style>
-    html, body { margin: 0; width: 100%; height: 100%; background: #000; }
+    /* manipulation: disables double-tap zoom; pinch zoom still allowed (accessibility). */
+    html, body { margin: 0; width: 100%; height: 100%; background: #000; touch-action: manipulation; }
     #demo { display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 0; }
-    #emulator-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
-    #canvas { display: block; width: 100%; height: 100%; border: 0; object-fit: contain; image-rendering: pixelated; image-rendering: crisp-edges; }
+    #emulator-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
+    #canvas { display: block; width: 100%; height: 100%; border: 0; object-fit: contain; image-rendering: pixelated; image-rendering: crisp-edges; touch-action: manipulation; }
     #overlay { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; z-index: 1; }
     #overlay span { color: #888; font: bold 1.3em system-ui, sans-serif; }
 
@@ -25,6 +26,7 @@
       gap: max(0.5em, 8px);
       -webkit-user-select: none;
       user-select: none;
+      -webkit-touch-callout: none;
       touch-action: none;
     }
     #touch-controls.visible { display: flex; }
@@ -41,7 +43,8 @@
       cursor: pointer;
       -webkit-user-select: none;
       user-select: none;
-      touch-action: manipulation;
+      -webkit-touch-callout: none;
+      touch-action: none;
       border-radius: 3px;
     }
     .touch-btn:active, .touch-btn.pressed {
@@ -150,6 +153,9 @@
         }
 
         var touchControls = document.getElementById('touch-controls');
+        touchControls.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+        touchControls.addEventListener('selectstart', function (e) { e.preventDefault(); });
+        touchControls.addEventListener('dragstart', function (e) { e.preventDefault(); });
         touchControls.addEventListener('pointerdown', function (e) {
           var btn = e.target.closest('.touch-btn');
           if (!btn) return;
