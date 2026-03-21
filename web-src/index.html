@@ -18,9 +18,9 @@
       display: none;
       flex: none;
       flex-direction: column;
-      align-items: center;
+      align-items: stretch;
       justify-content: center;
-      background: #1a1a1a;
+      background: #201d1a;
       border-top: 1px solid #444;
       padding: 0.5em 0.75em 0.6em;
       gap: max(0.5em, 8px);
@@ -30,13 +30,37 @@
       touch-action: none;
     }
     #touch-controls.visible { display: flex; }
-    .touch-row { display: flex; gap: max(0.5em, 8px); justify-content: center; flex-wrap: wrap; }
+    #touch-zones {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: max(0.5em, 8px);
+    }
+    #touch-zones .touch-btn {
+      width: max(3em, 48px);
+      height: max(3em, 48px);
+      min-width: max(3em, 48px);
+      min-height: max(3em, 48px);
+    }
+    #touch-zones .touch-symbol { font-size: 1.5em; }
+    #touch-left, #touch-right {
+      display: flex;
+      flex-direction: row;
+      gap: max(0.5em, 8px);
+    }
+    #touch-right { flex: 1; justify-content: flex-end; }
+    #touch-ret { display: flex; justify-content: center; }
     .touch-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.15em;
       background: transparent;
       color: #eee;
       border: 1px solid #555;
       font: 0.9em system-ui, sans-serif;
-      text-transform: uppercase;
       padding: 0.45em 0.7em;
       min-width: max(3em, 48px);
       min-height: max(3em, 48px);
@@ -45,7 +69,16 @@
       user-select: none;
       -webkit-touch-callout: none;
       touch-action: none;
-      border-radius: 3px;
+      border-radius: 5px;
+    }
+    .touch-symbol { font-size: 1.3em; line-height: 1; }
+    .touch-label { font-size: 0.6em; text-transform: uppercase; color: #888; }
+    .touch-btn:active .touch-label, .touch-btn.pressed .touch-label { color: inherit; }
+    .touch-btn-ret {
+      min-width: auto;
+      min-height: auto;
+      font-size: 0.6em;
+      text-transform: uppercase;
     }
     .touch-btn:active, .touch-btn.pressed {
       background: #0ff;
@@ -59,8 +92,19 @@
   <div id="demo">
     <div id="emulator-wrap"><canvas id="canvas"></canvas></div>
     <div id="touch-controls" aria-label="Touch controls">
-      <div class="touch-row"><button type="button" class="touch-btn hold" data-key="a">LEFT</button><button type="button" class="touch-btn hold" data-key="d">RIGHT</button></div>
-      <div class="touch-row"><button type="button" class="touch-btn" data-key="z">CCW</button><button type="button" class="touch-btn" data-key="x">CW</button><button type="button" class="touch-btn hold" data-key="space">DROP</button><button type="button" class="touch-btn" data-key="return">RET</button></div>
+      <div id="touch-zones">
+        <div id="touch-left">
+          <button type="button" class="touch-btn hold" data-key="a"><span class="touch-symbol">&#9664;</span><span class="touch-label">LEFT</span></button>
+          <button type="button" class="touch-btn hold" data-key="d"><span class="touch-symbol">&#9654;</span><span class="touch-label">RIGHT</span></button>
+        </div>
+        <div id="touch-right">
+          <button type="button" class="touch-btn" data-key="x"><span class="touch-symbol">&#8635;</span><span class="touch-label">ROT</span></button>
+          <button type="button" class="touch-btn hold" data-key="space"><span class="touch-symbol">&#8595;</span><span class="touch-label">DROP</span></button>
+        </div>
+      </div>
+      <div id="touch-ret">
+        <button type="button" class="touch-btn touch-btn-ret" data-key="return">RETURN</button>
+      </div>
     </div>
   </div>
 
@@ -117,7 +161,7 @@
 
       /* Touch accessibility layer: stateless, emits canonical keys only. */
       (function () {
-        var SDL_KEYSYM = { return: 13, space: 32, a: 97, d: 100, z: 122, x: 120 };
+        var SDL_KEYSYM = { return: 13, space: 32, a: 97, d: 100, x: 120 };
 
         function sendKeyDown(keySym) {
           if (typeof Module !== 'undefined' && typeof Module.ccall === 'function') {
