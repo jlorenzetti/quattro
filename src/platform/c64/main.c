@@ -15,6 +15,11 @@
 #include "types.h"
 #include "video.h"
 
+/* Optional CIA2 section timing + screen dump; only `make c64_perf` defines QUATTRO_PERF. */
+#ifdef QUATTRO_PERF
+#include "perf.h"
+#endif
+
 typedef enum {
     APP_TITLE,
     APP_START_HELP,
@@ -35,6 +40,9 @@ int main(void) {
 
     video_init();
     input_init();
+#ifdef QUATTRO_PERF
+    perf_init();
+#endif
 
     for (;;) {
         switch (app_state) {
@@ -82,23 +90,57 @@ int main(void) {
 
         case APP_GAME:
             if (!game_is_over(&state)) {
+#ifdef QUATTRO_PERF
+                perf_section_start(PERF_INPUT);
+#endif
                 Command cmd = input_poll();
+#ifdef QUATTRO_PERF
+                perf_section_end(PERF_INPUT);
+                perf_section_start(PERF_APPLY);
+#endif
                 game_apply_command(&state, cmd);
+#ifdef QUATTRO_PERF
+                perf_section_end_apply(cmd);
+#endif
                 if (!game_frame_drawn) {
                     video_draw_frame();
                     game_frame_drawn = 1;
                 }
+#ifdef QUATTRO_PERF
+                perf_section_start(PERF_BOARD);
+#endif
                 video_draw_board(&state);
+#ifdef QUATTRO_PERF
+                perf_section_end(PERF_BOARD);
+                perf_section_start(PERF_HUD);
+#endif
                 video_draw_hud(&state);
+#ifdef QUATTRO_PERF
+                perf_section_end(PERF_HUD);
+#endif
                 timing_wait_frame();
                 {
                     uint16_t interval = gravity_interval_for_level(state.score.level);
                     gravity_counter++;
                     if (gravity_counter >= interval) {
                         gravity_counter = 0;
+#ifdef QUATTRO_PERF
+                        perf_section_start(PERF_GRAVITY);
+#endif
                         game_tick_gravity(&state);
+#ifdef QUATTRO_PERF
+                        perf_section_end(PERF_GRAVITY);
+#endif
                     }
                 }
+#ifdef QUATTRO_PERF
+                perf_frame_end();
+                if (perf_halted()) {
+                    while (1) {
+                        timing_wait_frame();
+                    }
+                }
+#endif
             } else {
                 game_over_drawn = 0;
                 app_state = APP_GAME_OVER;

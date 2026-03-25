@@ -1,4 +1,4 @@
-.PHONY: help host_debug test c64 c64_fixed_seed c64_run compdb compdb-host compdb-c64 compdb-all clean
+.PHONY: help host_debug test c64 c64_perf c64_fixed_seed c64_run compdb compdb-host compdb-c64 compdb-all clean
 
 CORE_SRC := src/core/board.c src/core/game_state.c src/core/piece.c \
 	src/core/rng.c src/core/rules.c src/core/scoring.c \
@@ -9,6 +9,7 @@ C64_PLATFORM_SRC := src/platform/c64/main.c src/platform/c64/video.c \
 	src/platform/c64/input.c src/platform/c64/seed.c src/platform/c64/timing.c src/platform/c64/gravity.c
 C64_INC := $(CORE_INC) -Isrc/platform/c64
 C64_DEFS ?=
+C64_PERF_SRC ?=
 MOS_CC ?= mos-c64-clang
 BUILD_DIR := build
 C64_PRG := $(BUILD_DIR)/quattro.prg
@@ -19,6 +20,7 @@ help:
 	@echo "  make host_debug   Build and run host debug harness (optional: SEED=42)"
 	@echo "  make test        Build and run core tests"
 	@echo "  make c64         Build C64 PRG (requires llvm-mos: mos-c64-clang)"
+	@echo "  make c64_perf    Build C64 PRG with QUATTRO_PERF (CIA2 timers; halts after N frames)"
 	@echo "  make c64_fixed_seed  Build C64 PRG with fixed seed 12345 (reproducible debug)"
 	@echo "  make c64_run     Build and run in emulator (requires VICE x64sc)"
 	@echo "  make compdb       Generate compile_commands.json for clangd (host; requires Bear)"
@@ -41,9 +43,13 @@ tests/test_runner: tests/test_runner.c tests/core/test_board.c tests/core/test_p
 
 c64: $(C64_PRG)
 
-$(C64_PRG): $(CORE_SRC) $(C64_PLATFORM_SRC)
+$(C64_PRG): $(CORE_SRC) $(C64_PLATFORM_SRC) $(C64_PERF_SRC)
 	@mkdir -p $(BUILD_DIR)
-	$(MOS_CC) -Os $(C64_DEFS) $(C64_INC) -o $@ $(CORE_SRC) $(C64_PLATFORM_SRC)
+	$(MOS_CC) -Os $(C64_DEFS) $(C64_INC) -o $@ $(CORE_SRC) $(C64_PLATFORM_SRC) $(C64_PERF_SRC)
+
+c64_perf:
+	rm -f $(C64_PRG)
+	$(MAKE) $(C64_PRG) C64_DEFS=-DQUATTRO_PERF=1 C64_PERF_SRC=src/platform/c64/perf.c
 
 c64_fixed_seed: C64_DEFS := -DQUATTRO_FIXED_SEED=12345
 c64_fixed_seed: $(C64_PRG)

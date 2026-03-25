@@ -70,7 +70,7 @@
 **Performance**
 
 - reduce unnecessary writes
-- profile hotspots
+- profile hotspots; steady-state C64 sampling: `make c64_perf` — see [`docs/notes/performance-phase3-closure.md`](notes/performance-phase3-closure.md)
 - move critical paths lower-level only if justified
 
 ## Phase 4 — Finish
