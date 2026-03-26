@@ -53,6 +53,8 @@
 
 ## Phase 3 — Feel and performance
 
+**Status:** completed
+
 **Input feel baseline**
 
 - remove KERNAL-dependent gameplay repeat
