@@ -184,9 +184,15 @@ PieceKind rng_next_piece(RngState *rng);
 
 ## Game API
 ```c
+typedef struct {
+    uint8_t rotated;
+    uint8_t locked;
+    uint8_t lines_cleared;
+} GameStepResult;
+
 void game_start(GameState *state, uint32_t seed, uint8_t start_level);  /* start_level 0–9 */
-void game_apply_command(GameState *state, Command command);
-void game_tick_gravity(GameState *state);
+void game_apply_command(GameState *state, Command command, GameStepResult *step_result); /* step_result may be NULL */
+void game_tick_gravity(GameState *state, GameStepResult *step_result); /* step_result may be NULL */
 bool game_is_over(const GameState *state);
 ```
 
@@ -211,6 +217,8 @@ bool game_is_over(const GameState *state);
 
 No lock on failed soft drop in the first pass.
 
+If `step_result` is non-NULL, it is zeroed then `rotated` is set to 1 when a rotate command actually changed rotation.
+
 ### `game_tick_gravity()`
 - if the active piece can descend, descend
 - otherwise:
@@ -221,6 +229,8 @@ No lock on failed soft drop in the first pass.
   - generate a new next piece
   - check spawn validity
   - set game over if needed
+
+If `step_result` is non-NULL, it is zeroed at call entry. If the active piece **descends** (gravity step without lock), all fields remain **0**. On a **lock** tick, `locked` is **1** and `lines_cleared` is the row-clear count for that lock (0 if no rows cleared).
 
 ## Host-side prototype contract
 The first host-side spike must support:

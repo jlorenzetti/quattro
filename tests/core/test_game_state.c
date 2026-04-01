@@ -3,6 +3,8 @@
  * @brief Tests for game state: start, gravity, game over.
  */
 
+#include <stddef.h>
+
 #include "game_state.h"
 #include "types.h"
 
@@ -13,17 +15,17 @@ int test_game_state_run(void) {
     if (game_is_over(&state)) return 1;
     if (state.phase != GAME_PHASE_RUNNING) return 1;
 
-    game_apply_command(&state, CMD_MOVE_LEFT);
+    game_apply_command(&state, CMD_MOVE_LEFT, NULL);
     if (state.active.x >= QUATTRO_SPAWN_X) return 1;
 
-    game_apply_command(&state, CMD_MOVE_RIGHT);
-    game_apply_command(&state, CMD_MOVE_RIGHT);
+    game_apply_command(&state, CMD_MOVE_RIGHT, NULL);
+    game_apply_command(&state, CMD_MOVE_RIGHT, NULL);
 
-    game_apply_command(&state, CMD_SOFT_DROP);
-    game_tick_gravity(&state);
+    game_apply_command(&state, CMD_SOFT_DROP, NULL);
+    game_tick_gravity(&state, NULL);
 
-    game_apply_command(&state, CMD_ROTATE_CW);
-    game_apply_command(&state, CMD_ROTATE_CCW);
+    game_apply_command(&state, CMD_ROTATE_CW, NULL);
+    game_apply_command(&state, CMD_ROTATE_CCW, NULL);
 
     PieceKind first_next = state.next_piece;
     GameState state2;
@@ -46,7 +48,7 @@ int test_game_state_full_run(void) {
 
     unsigned ticks = 0;
     while (!game_is_over(&state) && ticks < max_ticks) {
-        game_tick_gravity(&state);
+        game_tick_gravity(&state, NULL);
         ticks++;
     }
 

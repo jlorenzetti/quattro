@@ -50,10 +50,10 @@ int main(int argc, char **argv) {
         if (c == '\n') continue;
 
         if ((char)c == 'g') {
-            if (!game_is_over(&state)) game_tick_gravity(&state);
+            if (!game_is_over(&state)) game_tick_gravity(&state, NULL);
         } else if (!game_is_over(&state)) {
             Command cmd = char_to_command((char)c);
-            if (cmd != CMD_NONE) game_apply_command(&state, cmd);
+            if (cmd != CMD_NONE) game_apply_command(&state, cmd, NULL);
         }
 
         /* Consume rest of line so the trailing newline does not trigger another render. */

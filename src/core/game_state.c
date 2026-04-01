@@ -28,7 +28,12 @@ void game_start(GameState *state, uint32_t seed, uint8_t start_level) {
     }
 }
 
-void game_apply_command(GameState *state, Command command) {
+void game_apply_command(GameState *state, Command command, GameStepResult *step_result) {
+    if (step_result) {
+        step_result->rotated = 0;
+        step_result->locked = 0;
+        step_result->lines_cleared = 0;
+    }
     if (!state || state->phase == GAME_PHASE_GAME_OVER) return;
     switch (command) {
         case CMD_NONE:
@@ -41,12 +46,18 @@ void game_apply_command(GameState *state, Command command) {
             break;
         case CMD_ROTATE_CW: {
             Rotation target = rotation_rotate_cw(state->active.rotation);
-            if (rules_can_rotate(&state->board, &state->active, target)) state->active.rotation = target;
+            if (rules_can_rotate(&state->board, &state->active, target)) {
+                state->active.rotation = target;
+                if (step_result) step_result->rotated = 1;
+            }
             break;
         }
         case CMD_ROTATE_CCW: {
             Rotation target = rotation_rotate_ccw(state->active.rotation);
-            if (rules_can_rotate(&state->board, &state->active, target)) state->active.rotation = target;
+            if (rules_can_rotate(&state->board, &state->active, target)) {
+                state->active.rotation = target;
+                if (step_result) step_result->rotated = 1;
+            }
             break;
         }
         case CMD_SOFT_DROP:
@@ -55,7 +66,12 @@ void game_apply_command(GameState *state, Command command) {
     }
 }
 
-void game_tick_gravity(GameState *state) {
+void game_tick_gravity(GameState *state, GameStepResult *step_result) {
+    if (step_result) {
+        step_result->rotated = 0;
+        step_result->locked = 0;
+        step_result->lines_cleared = 0;
+    }
     if (!state || state->phase == GAME_PHASE_GAME_OVER) return;
     if (rules_can_move(&state->board, &state->active, 0, 1)) {
         state->active.y++;
@@ -63,6 +79,10 @@ void game_tick_gravity(GameState *state) {
     }
     rules_lock_active_piece(&state->board, &state->active);
     uint8_t cleared = board_clear_full_rows(&state->board);
+    if (step_result) {
+        step_result->locked = 1;
+        step_result->lines_cleared = cleared;
+    }
     if (cleared > 0) {
         scoring_apply_line_clear(&state->score, cleared);
     }

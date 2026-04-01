@@ -8,10 +8,10 @@ Measured **steady-state `APP_GAME`** work only (see `[src/platform/c64/main.c](.
 | Section | Code                                                    |
 | ------- | ------------------------------------------------------- |
 | I       | `input_poll()`                                          |
-| A       | `game_apply_command()`                                  |
+| A       | `game_apply_command()` (core API: optional `GameStepResult *`; see [`core-spec.md`](../core-spec.md)) |
 | B       | `video_draw_board()`                                    |
 | H       | `video_draw_hud()`                                      |
-| G       | `game_tick_gravity()` **only when a gravity tick runs** |
+| G       | `game_tick_gravity()` **only when a gravity tick runs** (same optional third argument) |
 
 
 **Excluded from steady-state:** `video_draw_frame()` (drawn once when entering gameplay; not per-frame). Do not treat it as a recurring hotspot.

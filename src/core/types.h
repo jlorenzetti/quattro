@@ -78,6 +78,16 @@ typedef enum {
     CMD_SOFT_DROP
 } Command;
 
+/**
+ * Optional per-step telemetry from `game_apply_command` / `game_tick_gravity` when the pointer is non-NULL.
+ * Lets the platform layer react (e.g. SFX) without audio calls inside core logic.
+ */
+typedef struct {
+    uint8_t rotated;       /**< 1 if a rotate command changed rotation this call. */
+    uint8_t locked;        /**< 1 if a gravity tick caused lock (spawn follows in the same tick). */
+    uint8_t lines_cleared; /**< Lines cleared on that lock (0 if none). */
+} GameStepResult;
+
 typedef struct {
     uint32_t state;
 } RngState;
