@@ -6,7 +6,8 @@ CORE_SRC := src/core/board.c src/core/game_state.c src/core/piece.c \
 CORE_INC := -Isrc/core
 
 C64_PLATFORM_SRC := src/platform/c64/main.c src/platform/c64/video.c \
-	src/platform/c64/input.c src/platform/c64/seed.c src/platform/c64/timing.c src/platform/c64/gravity.c
+	src/platform/c64/input.c src/platform/c64/seed.c src/platform/c64/timing.c src/platform/c64/gravity.c \
+	src/platform/c64/audio.c
 C64_INC := $(CORE_INC) -Isrc/platform/c64
 C64_DEFS ?=
 C64_PERF_SRC ?=

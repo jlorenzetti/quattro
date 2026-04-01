@@ -76,7 +76,8 @@
 - move critical paths lower-level only if justified
 
 ## Phase 4 — Finish
-- retain final v1 feature set
-- final audio pass
-- documentation pass
-- release packaging
+- lock v1 boundary (must-have / optional / out-of-v1) and protect baseline
+- optional candidates: [`notes/phase-4-v1-candidate-gate.md`](notes/phase-4-v1-candidate-gate.md) (order + accept/defer); micro SFX engineering: [`notes/phase-4-micro-sfx.md`](notes/phase-4-micro-sfx.md)
+- target minimal v1 micro SFX (fallback: no audio if risk is disproportionate; `QUATTRO_AUDIO=0`)
+- final documentation pass (README + roadmap/changelog + build/run clarity)
+- release packaging (PRG artifact, controls summary, release note) + final RC regression checklist

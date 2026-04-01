@@ -35,10 +35,7 @@ Responsible for:
 - drawing minimal UI elements
 
 ### Audio
-Responsible for:
-- essential SFX
-- minimal music only if included outside gameplay
-- predictable priority behavior
+C64: SID one-shots in `src/platform/c64/audio.c` (six cues; compile-time mute `QUATTRO_AUDIO=0`). Core stays audio-free; optional `GameStepResult` on command/gravity lets the platform fire cues without embedding SID in rules — see [`notes/phase-4-micro-sfx.md`](notes/phase-4-micro-sfx.md). No gameplay music bed in v1.
 
 ### Tooling
 Responsible for:

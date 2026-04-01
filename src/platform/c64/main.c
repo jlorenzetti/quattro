@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "audio.h"
 #include "game_state.h"
 #include "gravity.h"
 #include "input.h"
@@ -39,6 +40,7 @@ int main(void) {
     unsigned int game_frame_drawn = 0;
 
     video_init();
+    audio_init();
     input_init();
 #ifdef QUATTRO_PERF
     perf_init();
@@ -48,6 +50,7 @@ int main(void) {
         switch (app_state) {
         case APP_TITLE:
             video_draw_title();
+            audio_play(QUATTRO_SND_TITLE);
             while (!input_any_key_poll()) {
                 timing_wait_frame();
             }
@@ -72,6 +75,7 @@ int main(void) {
                 bool level_up = false;
                 input_poll_start_help(&digit, &start, &level_down, &level_up);
                 if (start) {
+                    audio_play(QUATTRO_SND_START_CONFIRM);
                     video_clear();
                     game_start(&state, seed_generate(start_level, start_help_frames), start_level);
                     input_reset_gameplay();
@@ -98,7 +102,13 @@ int main(void) {
                 perf_section_end(PERF_INPUT);
                 perf_section_start(PERF_APPLY);
 #endif
-                game_apply_command(&state, cmd);
+                {
+                    GameStepResult step;
+                    game_apply_command(&state, cmd, &step);
+                    if (step.rotated) {
+                        audio_play(QUATTRO_SND_ROTATE);
+                    }
+                }
 #ifdef QUATTRO_PERF
                 perf_section_end_apply(cmd);
 #endif
@@ -127,7 +137,15 @@ int main(void) {
 #ifdef QUATTRO_PERF
                         perf_section_start(PERF_GRAVITY);
 #endif
-                        game_tick_gravity(&state);
+                        {
+                            GameStepResult gstep;
+                            game_tick_gravity(&state, &gstep);
+                            if (gstep.lines_cleared > 0) {
+                                audio_play(QUATTRO_SND_LINE_CLEAR);
+                            } else if (gstep.locked) {
+                                audio_play(QUATTRO_SND_LOCK);
+                            }
+                        }
 #ifdef QUATTRO_PERF
                         perf_section_end(PERF_GRAVITY);
 #endif
@@ -142,6 +160,7 @@ int main(void) {
                 }
 #endif
             } else {
+                audio_play(QUATTRO_SND_GAME_OVER);
                 game_over_drawn = 0;
                 app_state = APP_GAME_OVER;
             }
