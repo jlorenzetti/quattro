@@ -5,6 +5,12 @@ Clarify and enforce the step that decides and executes the few optional candidat
 
 This gate exists to keep Phase 4 disciplined: no broader feature ideation, no schedule drift, and no RC closure until v1 optional candidates are explicitly resolved.
 
+## Status
+
+- [x] **Micro SFX pass:** accepted into v1 (full set shipped on C64 default build; `QUATTRO_AUDIO=0` retained as fallback build option).
+- [ ] **Next-piece preview:** pending (Phase 4 candidate).
+- [ ] **Micro polish:** pending (only if it follows directly from the two passes above).
+
 ## 2. Candidate set
 Use this exact candidate set:
 
@@ -40,7 +46,7 @@ Accept into v1 only if:
 
 Otherwise: defer.
 
-**C64 (current):** accepted — full six-cue SID layer; see [`phase-4-micro-sfx.md`](phase-4-micro-sfx.md).
+**Outcome:** accepted into v1 (full set shipped on C64 default build; `QUATTRO_AUDIO=0` retained as fallback build option). See [`phase-4-micro-sfx.md`](phase-4-micro-sfx.md).
 
 ### Next-piece preview
 Accept into v1 only if:
