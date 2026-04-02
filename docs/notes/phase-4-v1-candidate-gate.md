@@ -8,8 +8,8 @@ This gate exists to keep Phase 4 disciplined: no broader feature ideation, no sc
 ## Status
 
 - [x] **Micro SFX pass:** accepted into v1 (full set shipped on C64 default build; `QUATTRO_AUDIO=0` retained as fallback build option).
-- [ ] **Next-piece preview:** pending (Phase 4 candidate).
-- [ ] **Micro polish:** pending (only if it follows directly from the two passes above).
+- [x] **Next-piece preview:** accepted into v1 (C64 default build).
+- [x] **Micro polish:** deferred from v1 (not needed).
 
 ## 2. Candidate set
 Use this exact candidate set:
@@ -56,6 +56,8 @@ Accept into v1 only if:
 
 Otherwise: defer.
 
+**Outcome:** accepted into v1 (C64 default build).
+
 ### Micro polish
 Accept only if:
 - it is tiny
@@ -63,6 +65,8 @@ Accept only if:
 - it does not open new scope
 
 Otherwise: defer.
+
+**Outcome:** deferred from v1 (not needed).
 
 ## 6. Exit condition
 This gate is closed only when:

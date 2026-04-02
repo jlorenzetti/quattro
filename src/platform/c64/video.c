@@ -44,6 +44,7 @@ static bool g_hud_labels_drawn = false;
 static uint32_t g_last_hud_score = 0xFFFFFFFFu;
 static uint16_t g_last_hud_lines = 0xFFFFu;
 static uint8_t g_last_hud_level = 0xFFu;
+static uint8_t g_last_preview_piece = 0xFFu;
 
 /* Game-over/replay prompt draw cache. */
 static bool g_game_over_band_drawn = false;
@@ -59,10 +60,65 @@ static void invalidate_caches(void) {
     g_last_hud_score = 0xFFFFFFFFu;
     g_last_hud_lines = 0xFFFFu;
     g_last_hud_level = 0xFFu;
+    g_last_preview_piece = 0xFFu;
     g_game_over_band_drawn = false;
     g_replay_prompt_drawn = false;
     g_start_help_labels_drawn = false;
     g_last_start_level = 0xFFu;
+}
+
+/**
+ * @brief Draw a minimal next-piece preview in the left support column.
+ *
+ * Uses a small 4x4 block area centred between `HUD_SCREEN_COL` and the well frame. No label by default; the
+ * preview is intentionally subordinate to the board and SCORE/LINES/LEVEL.
+ */
+static void draw_next_piece_preview(PieceKind kind) {
+    enum {
+        PREVIEW_W = 4,
+        PREVIEW_H = 4
+    };
+
+    const unsigned int left_col = HUD_SCREEN_COL;
+    const unsigned int right_col = BOARD_SCREEN_X - 2; /* keep clear of the well frame at BOARD_SCREEN_X-1 */
+    const unsigned int usable_w = right_col - left_col + 1;
+    const unsigned int col0 = left_col + (usable_w - PREVIEW_W) / 2;
+    const unsigned int row0 = HUD_SCREEN_ROW + 8;
+
+    /* Clear preview area. */
+    for (unsigned int r = 0; r < PREVIEW_H; ++r) {
+        for (unsigned int c = 0; c < PREVIEW_W; ++c) {
+            const unsigned int off = C64_SCREEN_OFFSET(col0 + c, row0 + r);
+            C64_SCREEN_RAM[off] = CHAR_EMPTY;
+            C64_COLOR_RAM[off] = COLOR_EMPTY;
+        }
+    }
+
+    /* Compute a small centering shift within 4x4 based on ROT_0 offsets. */
+    int min_x = 99, max_x = -99, min_y = 99, max_y = -99;
+    for (uint8_t i = 0; i < PIECE_BLOCK_COUNT; ++i) {
+        Point p = piece_get_block_offset(kind, ROT_0, i);
+        if ((int)p.x < min_x) min_x = (int)p.x;
+        if ((int)p.x > max_x) max_x = (int)p.x;
+        if ((int)p.y < min_y) min_y = (int)p.y;
+        if ((int)p.y > max_y) max_y = (int)p.y;
+    }
+    const int shape_w = (max_x - min_x) + 1;
+    const int shape_h = (max_y - min_y) + 1;
+    const int shift_x = (int)((PREVIEW_W - shape_w) / 2) - min_x;
+    const int shift_y = (int)((PREVIEW_H - shape_h) / 2) - min_y;
+
+    for (uint8_t i = 0; i < PIECE_BLOCK_COUNT; ++i) {
+        Point p = piece_get_block_offset(kind, ROT_0, i);
+        const int x = (int)p.x + shift_x;
+        const int y = (int)p.y + shift_y;
+        if (x < 0 || x >= PREVIEW_W || y < 0 || y >= PREVIEW_H) continue;
+        {
+            const unsigned int off = C64_SCREEN_OFFSET(col0 + (unsigned int)x, row0 + (unsigned int)y);
+            C64_SCREEN_RAM[off] = CHAR_BLOCK;
+            C64_COLOR_RAM[off] = COLOR_BORDER;
+        }
+    }
 }
 
 void video_init(void) {
@@ -155,6 +211,11 @@ void video_draw_hud(const GameState *state) {
     if (!g_hud_labels_drawn || g_last_hud_level != (uint8_t)s->level) {
         put_number(HUD_SCREEN_COL + 6, row, (uint32_t)s->level, 2);
         g_last_hud_level = (uint8_t)s->level;
+    }
+
+    if (!g_hud_labels_drawn || g_last_preview_piece != (uint8_t)state->next_piece) {
+        draw_next_piece_preview(state->next_piece);
+        g_last_preview_piece = (uint8_t)state->next_piece;
     }
     g_hud_labels_drawn = true;
 }

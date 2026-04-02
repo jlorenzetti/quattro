@@ -48,7 +48,7 @@
 
 - State flow: Title → StartHelp → Game → GameOver (with replay) → StartHelp. Boot starts at Title.
 - Title: block-built QUATTRO wordmark, one prompt line (PRESS ANY KEY). Start/help: start level 0–9 (keys 0–9), RETURN to start; controls listed (A/D MOVE, Z/X ROTATE, SPACE DROP). Game over: band on field + "RETURN AGAIN" at bottom; RETURN → StartHelp.
-- In-game UI unchanged: SCORE / LINES / LEVEL only (no next-piece in 2.6). Core: minimal `game_start(..., start_level)` and scoring `initial_level` for level progression.
+- In-game UI unchanged: SCORE / LINES / LEVEL only (no next-piece in 2.6). Core: minimal `game_start(..., start_level)` and scoring `initial_level` for level progression. (Phase 4 adds next-piece preview as an accepted v1 candidate; see `notes/phase-4-v1-candidate-gate.md`.)
 - Gravity: dedicated counter, PAL-friendly table (classic console pacing reference). Input: A/D repeat when held (keyboard matrix).
 
 ## Phase 3 — Feel and performance

@@ -14,7 +14,7 @@ A sober, historically-minded falling-blocks game for Commodore 64, built with co
 
 Host-side core is tested; the C64 build covers the full loop (title, start/help with levels 0–9, play, game over, replay to start/help).
 
-v1 means a stable baseline: ROM/PETSCII presentation, current controls and UI, release packaging, and documentation closure. Optional candidates (e.g. next-piece preview) are listed in [`docs/notes/phase-4-v1-candidate-gate.md`](docs/notes/phase-4-v1-candidate-gate.md). Audio: minimal micro SFX ([`docs/notes/phase-4-micro-sfx.md`](docs/notes/phase-4-micro-sfx.md)); `QUATTRO_AUDIO=0` or deferring the pass remains acceptable (see **Building**).
+v1 means a stable baseline: ROM/PETSCII presentation, current controls and UI, release packaging, and documentation closure. Audio: minimal micro SFX ([`docs/notes/phase-4-micro-sfx.md`](docs/notes/phase-4-micro-sfx.md)); `QUATTRO_AUDIO=0` remains a fallback build option (see **Building**).
 
 ## Why
 
@@ -66,7 +66,7 @@ A/D MOVE  Z/X ROTATE  SPC DROP  G TICK  Q QUIT
 - Tested host-side core (deterministic, test-backed)
 - Playable C64 build (llvm-mos, runs in VICE). C64 gameplay uses a pseudorandom seed derived at game start; deterministic seeds remain available for host tests and optional debug builds.
 - Title screen (block wordmark, PRESS ANY KEY) and start/help (level 0–9, RETURN start)
-- Gameplay: board frame, HUD (SCORE / LINES / LEVEL), level-based gravity
+- Gameplay: board frame, HUD (SCORE / LINES / LEVEL), **next-piece preview**, level-based gravity
 - Game over on field + replay prompt (RETURN AGAIN → start/help)
 - C64 SID micro SFX (six one-shots; disable with `QUATTRO_AUDIO=0` — see **Building** and [`docs/notes/phase-4-micro-sfx.md`](docs/notes/phase-4-micro-sfx.md))
 - Same game logic on host and C64 ([host-core contract](docs/host-core-contract.md))

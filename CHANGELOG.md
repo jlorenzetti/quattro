@@ -13,6 +13,7 @@ Quattro has no version number yet; the first tagged release will be `0.1.0`.
 - RC closure: regression checklist (boot, full state loop, keyboard + joystick, docs-based build/run, artifact).
 - `game_apply_command` / `game_tick_gravity`: optional `GameStepResult *` (NULL-safe) for platform step telemetry; core stays audio-free.
 - C64 micro SID (`src/platform/c64/audio.c`, `audio.h`): six one-shots; menu on SID voice 2, gameplay on voice 1; shared `blip_pulse` path. Behaviour and variance: `audio.c` header; [`docs/notes/phase-4-micro-sfx.md`](docs/notes/phase-4-micro-sfx.md).
+- C64 UI: add a minimal next-piece preview in the left support column (keeps board/well composition unchanged).
 - Docs: micro SFX consolidated in [`docs/notes/phase-4-micro-sfx.md`](docs/notes/phase-4-micro-sfx.md).
 
 ### Added
