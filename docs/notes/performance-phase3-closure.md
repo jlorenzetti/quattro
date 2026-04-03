@@ -2,7 +2,7 @@
 
 ## Scope
 
-Measured **steady-state `APP_GAME`** work only (see `[src/platform/c64/main.c](../../src/platform/c64/main.c)`):
+Measured **steady-state `APP_GAME`** work only (see [`main.c`](../../src/platform/c64/main.c)):
 
 
 | Section | Code                                                    |
@@ -20,7 +20,7 @@ Measured **steady-state `APP_GAME`** work only (see `[src/platform/c64/main.c](.
 
 ## Method
 
-- **Build:** `make c64_perf` links `[src/platform/c64/perf.c](../../src/platform/c64/perf.c)` with `-DQUATTRO_PERF=1` and halts after `QUATTRO_PERF_FRAMES` (default **500**) steady gameplay frames.
+- **Build:** `make c64_perf` links [`perf.c`](../../src/platform/c64/perf.c) with `-DQUATTRO_PERF=1` and halts after `QUATTRO_PERF_FRAMES` (default **500**) steady gameplay frames.
 - **Timer:** CIA2 Timer A free-running countdown (`$DD04`/`$DD05`); section cost = start − end (16-bit, timer counts down).
 - **Output:** After 500 frames:
   - **Row 21** — PERF_APPLY discards only, by command bucket (2 hex each, capped `FF`): `an##` = `CMD_NONE`, `am##` = move L/R, `ar##` = rotate CW/CCW, `sd##` = soft drop. Sums should match the `A` bad count on row 22.

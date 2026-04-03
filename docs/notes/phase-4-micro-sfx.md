@@ -1,6 +1,6 @@
 # Phase 4 — Micro SFX (implementation and ship notes)
 
-**Vocabulary (design):** [`sound-v1-vocabulary.md`](sound-v1-vocabulary.md). **Optional-work gate:** [`phase-4-v1-candidate-gate.md`](phase-4-v1-candidate-gate.md). **Driver / routing:** [`src/platform/c64/audio.c`](../../src/platform/c64/audio.c) file header.
+**Vocabulary (design):** [`sound-v1-vocabulary.md`](sound-v1-vocabulary.md). **Optional-work gate:** [`phase-4-v1-candidate-gate.md`](phase-4-v1-candidate-gate.md). **Driver / routing:** [`audio.c`](../../src/platform/c64/audio.c) file header.
 
 **Status:** Default C64 build includes **all six** vocabulary cues (SID); refinement in §6 is **closed**. `QUATTRO_AUDIO=0` is the supported no-SID build.
 
@@ -11,12 +11,12 @@ Ship a **minimal micro SFX layer** for v1 without gameplay, presentation, or tim
 ## 2. What shipped (C64)
 
 - **Core:** optional `GameStepResult *` on `game_apply_command` / `game_tick_gravity` (NULL-safe). Core stays audio-free.
-- **Platform:** `audio_init` / `audio_play` in [`src/platform/c64/audio.c`](../../src/platform/c64/audio.c) + [`audio.h`](../../src/platform/c64/audio.h). Triggers in [`main.c`](../../src/platform/c64/main.c): rotate after successful command; lock / line clear after gravity telemetry; game over, start confirm, title on state entry.
-- **Mute:** build with `QUATTRO_AUDIO=0` (see [README](../../README.md) **Building**; remove stale `build/quattro.prg` if the linker skips rebuild).
+- **Platform:** `audio_init` / `audio_play` in [`audio.c`](../../src/platform/c64/audio.c) + [`audio.h`](../../src/platform/c64/audio.h). Triggers in [`main.c`](../../src/platform/c64/main.c): rotate after successful command; lock / line clear after gravity telemetry; game over, start confirm, title on state entry.
+- **Mute:** build with `QUATTRO_AUDIO=0` (see [`README.md`](../../README.md) **Building**; remove stale `build/quattro.prg` if the linker skips rebuild).
 
 ### Tuning snapshot
 
-**Source of truth:** [`src/platform/c64/audio.c`](../../src/platform/c64/audio.c) (macros, `k_title_motive_notes`, `play_line_clear_arp`). Inter-note / inter-step gaps below are **`spin_iters` counts**, not milliseconds.
+**Source of truth:** [`audio.c`](../../src/platform/c64/audio.c) (macros, `k_title_motive_notes`, `play_line_clear_arp`). Inter-note / inter-step gaps below are **`spin_iters` counts**, not milliseconds.
 
 | Shared pacing | Value | Macros (all aligned) |
 | ------------- | ----- | -------------------- |
