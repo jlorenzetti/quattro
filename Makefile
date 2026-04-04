@@ -1,4 +1,4 @@
-.PHONY: help host_debug test c64 c64_perf c64_fixed_seed c64_run compdb compdb-host compdb-c64 compdb-all clean release_artifacts
+.PHONY: help host_debug test c64 c64_perf c64_fixed_seed c64_run compdb compdb-host compdb-c64 compdb-all clean release_artifacts demo_gif
 
 CORE_SRC := src/core/board.c src/core/game_state.c src/core/piece.c \
 	src/core/rng.c src/core/rules.c src/core/scoring.c \
@@ -41,6 +41,7 @@ help:
 	@echo "  make compdb-c64   Generate compile_commands.c64.json only (requires Bear + llvm-mos)"
 	@echo "  make compdb-all   Generate merged compile_commands.json (host + C64)"
 	@echo "  make clean        Remove build artifacts"
+	@echo "  make demo_gif     Build README GIF from VICE capture (requires ffmpeg; INPUT=path/to/video.avi [OUTPUT=docs/quattro-demo.gif])"
 
 host_debug: tools/host_debug/host_debug
 	$(if $(SEED),./tools/host_debug/host_debug $(SEED),./tools/host_debug/host_debug)
@@ -96,3 +97,8 @@ clean:
 	rm -f tools/host_debug/host_debug tests/test_runner
 	rm -f $(C64_PRG)
 	rm -f compile_commands.json compile_commands.host.json compile_commands.c64.json
+
+demo_gif:
+	@test -n "$(INPUT)" || (echo 'Usage: make demo_gif INPUT=path/to/video.avi [OUTPUT=docs/quattro-demo.gif]' && exit 1)
+	@command -v ffmpeg >/dev/null 2>&1 || { echo 'demo_gif requires ffmpeg (e.g. brew install ffmpeg).'; exit 1; }
+	@tools/make_demo_gif.sh "$(INPUT)" "$(or $(OUTPUT),docs/quattro-demo.gif)"
