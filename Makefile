@@ -1,4 +1,4 @@
-.PHONY: help host_debug test c64 c64_perf c64_fixed_seed c64_run compdb compdb-host compdb-c64 compdb-all clean
+.PHONY: help host_debug test c64 c64_perf c64_fixed_seed c64_run compdb compdb-host compdb-c64 compdb-all clean release_artifacts
 
 CORE_SRC := src/core/board.c src/core/game_state.c src/core/piece.c \
 	src/core/rng.c src/core/rules.c src/core/scoring.c \
@@ -15,12 +15,24 @@ MOS_CC ?= mos-c64-clang
 BUILD_DIR := build
 C64_PRG := $(BUILD_DIR)/quattro.prg
 
+DIST_DIR := dist
+VERSION ?=
+# Default release uses the standard C64 PRG. A future release_artifacts_silent target
+# can set RELEASE_SRC_PRG to a separately built silent PRG without changing this recipe.
+RELEASE_SRC_PRG := $(C64_PRG)
+ifeq ($(strip $(VERSION)),)
+RELEASE_PRG := $(DIST_DIR)/quattro-local.prg
+else
+RELEASE_PRG := $(DIST_DIR)/quattro-$(VERSION).prg
+endif
+
 help:
 	@echo "Quattro — host-side core + C64"
 	@echo ""
 	@echo "  make host_debug   Build and run host debug harness (optional: SEED=42)"
 	@echo "  make test        Build and run core tests"
 	@echo "  make c64         Build C64 PRG (requires llvm-mos: mos-c64-clang)"
+	@echo "  make release_artifacts  Stage default C64 PRG into dist/ for release (optional: VERSION=v0.1.0)"
 	@echo "  make c64_perf    Build C64 PRG with QUATTRO_PERF (CIA2 timers; halts after N frames)"
 	@echo "  make c64_fixed_seed  Build C64 PRG with fixed seed 12345 (reproducible debug)"
 	@echo "  make c64_run     Build and run in emulator (requires VICE x64sc)"
@@ -58,6 +70,11 @@ c64_fixed_seed: $(C64_PRG)
 c64_run: $(C64_PRG)
 	@command -v x64sc >/dev/null 2>&1 || { echo "VICE x64sc not found; install VICE or run the PRG in your C64 emulator."; exit 1; }
 	x64sc $(abspath $(C64_PRG))
+
+release_artifacts: c64
+	@mkdir -p $(DIST_DIR)
+	cp $(RELEASE_SRC_PRG) $(RELEASE_PRG)
+	@echo "Staged: $(abspath $(RELEASE_PRG))"
 
 compdb: compdb-host
 	@cp compile_commands.host.json compile_commands.json

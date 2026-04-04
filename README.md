@@ -73,6 +73,7 @@ A/D MOVE  Z/X ROTATE  SPC DROP  G TICK  Q QUIT
 
 - **Host / tests:** `make host_debug`, `make test` (standard `cc`).
 - **C64:** `make c64` ([llvm-mos](https://github.com/llvm-mos/llvm-mos) `mos-c64-clang`). Run: `make c64_run` (VICE) or load `build/quattro.prg`. Debug seed: `make c64_fixed_seed` or `make c64 C64_DEFS="-DQUATTRO_FIXED_SEED=12345"`. Silent build: `rm -f build/quattro.prg && make c64 C64_DEFS="-DQUATTRO_AUDIO=0"`.
+- **Release artifact (local):** `make release_artifacts` or `make release_artifacts VERSION=v0.1.0` copies the default PRG into `dist/` for attaching to GitHub Releases; `dist/` is local staging (gitignored) — do not commit release binaries.
 - **clangd:** `make compdb` or `make compdb-all` ([Bear](https://github.com/rizsotto/Bear)); generated DBs not committed.
 - **Browser demo (experimental):** Pages deploy from CI — [`README.md`](web-src/README.md).
 
