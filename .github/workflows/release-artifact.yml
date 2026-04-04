@@ -1,0 +1,37 @@
+# Build the default C64 PRG on version tags and attach it to the matching GitHub Release.
+# Uses the same path and naming as locally: `make release_artifacts VERSION=<tag>` → dist/quattro-<tag>.prg
+#
+# If no GitHub Release exists for the tag yet, softprops/action-gh-release creates a published
+# (non-draft) release and uploads the asset. If a release already exists, the file is added to it.
+
+name: Release artifact
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  attach-prg:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install llvm-mos
+        run: |
+          curl -sSfL -o llvm-mos-linux.tar.xz \
+            'https://github.com/llvm-mos/llvm-mos-sdk/releases/latest/download/llvm-mos-linux.tar.xz'
+          tar xf llvm-mos-linux.tar.xz
+          echo "$GITHUB_WORKSPACE/llvm-mos/bin" >> "$GITHUB_PATH"
+
+      - name: Build and stage release PRG
+        run: make release_artifacts VERSION="${GITHUB_REF_NAME}"
+
+      - name: Upload PRG to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/quattro-${{ github.ref_name }}.prg
