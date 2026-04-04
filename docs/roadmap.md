@@ -1,5 +1,7 @@
 # Roadmap
 
+Phases **0–4** are **complete** through public release **0.1.0** — [`release-0.1.0.md`](notes/release-0.1.0.md).
+
 ## Phase 0 — Pre-production
 
 **Status:** completed
@@ -40,7 +42,7 @@
 - Palette: black background, border = background ($D020 = $D021), frame 15, locked 1, active 3, HUD 15.
 - Layout: board centred (BOARD_SCREEN_X = 15), HUD left (HUD_SCREEN_COL = 1).
 - Game over: 3-row light grey band inside board, "GAME  OVER" reverse (message on field).
-- Custom charset: isolated investigation; see `docs/notes/custom-charset-investigation.md`.
+- Custom charset: deferred; see [`custom-charset-investigation.md`](notes/custom-charset-investigation.md).
 
 ## Phase 2.6 — Interface composition
 
@@ -48,36 +50,22 @@
 
 - State flow: Title → StartHelp → Game → GameOver (with replay) → StartHelp. Boot starts at Title.
 - Title: block-built QUATTRO wordmark, one prompt line (PRESS ANY KEY). Start/help: start level 0–9 (keys 0–9), RETURN to start; controls listed (A/D MOVE, Z/X ROTATE, SPACE DROP). Game over: band on field + "RETURN AGAIN" at bottom; RETURN → StartHelp.
-- In-game UI unchanged: SCORE / LINES / LEVEL only (no next-piece in 2.6). Core: minimal `game_start(..., start_level)` and scoring `initial_level` for level progression. (Phase 4 adds next-piece preview as an accepted v1 candidate; see `notes/phase-4-v1-candidate-gate.md`.)
+- HUD at 2.6 ship: SCORE / LINES / LEVEL only. **0.1.0** adds next-piece preview ([`phase-4-v1-candidate-gate.md`](notes/phase-4-v1-candidate-gate.md)). Core: `game_start(..., start_level)`, scoring `initial_level`.
 - Gravity: dedicated counter, PAL-friendly table (classic console pacing reference). Input: A/D repeat when held (keyboard matrix).
 
 ## Phase 3 — Feel and performance
 
 **Status:** completed
 
-**Input feel baseline**
-
-- remove KERNAL-dependent gameplay repeat
-- define a Quattro-owned keyboard input model
-- tune DAS and lateral repeat
-- define soft-drop hold behaviour (SPACE remains soft drop)
-- validate input harshness / controllability through playtest
-
-**Target control schemes**
-
-- add joystick support (after keyboard feel is stabilized)
-- validate keyboard vs joystick feel
-- keep mappings minimal and platform-native
-
-**Performance**
-
-- reduce unnecessary writes
-- profile hotspots; steady-state C64 sampling: `make c64_perf` — see [`performance-phase3-closure.md`](notes/performance-phase3-closure.md)
-- move critical paths lower-level only if justified
+- **Input:** Quattro-owned repeat (not KERNAL); DAS / soft-drop / rotation semantics — [`input-baseline.md`](notes/input-baseline.md).
+- **Joystick:** port 2, minimal mapping; validated alongside keyboard.
+- **Performance:** fewer redundant video writes; steady-state sampling via `make c64_perf` — [`performance-phase3-closure.md`](notes/performance-phase3-closure.md). Lower-level rewrites only when measured and localized.
 
 ## Phase 4 — Finish
-- lock v1 boundary (must-have / optional / out-of-v1) and protect baseline
-- optional candidates: [`phase-4-v1-candidate-gate.md`](notes/phase-4-v1-candidate-gate.md) (order + accept/defer); micro SFX engineering: [`phase-4-micro-sfx.md`](notes/phase-4-micro-sfx.md)
-- target minimal v1 micro SFX (fallback: no audio if risk is disproportionate; `QUATTRO_AUDIO=0`)
-- final documentation pass (README + roadmap/changelog + build/run clarity)
-- release packaging (PRG artifact, controls summary, release note) + final RC regression checklist
+
+**Status:** **completed.** RC + interactive smoke: [`phase-4-rc-closure.md`](notes/phase-4-rc-closure.md). Release text: [`release-0.1.0.md`](notes/release-0.1.0.md).
+
+- v1 boundary fixed (must-have / optional / out-of-v1).
+- Optional candidates settled — [`phase-4-v1-candidate-gate.md`](notes/phase-4-v1-candidate-gate.md): micro SFX + next-piece preview **in**; micro polish **out** for v1.
+- Default SID SFX; `QUATTRO_AUDIO=0` silent build.
+- Docs + `build/quattro.prg` build path verified.

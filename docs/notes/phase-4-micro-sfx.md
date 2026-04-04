@@ -1,12 +1,12 @@
 # Phase 4 — Micro SFX (implementation and ship notes)
 
-**Vocabulary (design):** [`sound-v1-vocabulary.md`](sound-v1-vocabulary.md). **Optional-work gate:** [`phase-4-v1-candidate-gate.md`](phase-4-v1-candidate-gate.md). **Driver / routing:** [`audio.c`](../../src/platform/c64/audio.c) file header.
+**Status:** engineering reference (C64 SID). Default build: **all six** vocabulary cues; §6 refinement **closed**. `QUATTRO_AUDIO=0` = supported silent build.
 
-**Status:** Default C64 build includes **all six** vocabulary cues (SID); refinement in §6 is **closed**. `QUATTRO_AUDIO=0` is the supported no-SID build.
+**Vocabulary (design):** [`sound-v1-vocabulary.md`](sound-v1-vocabulary.md). **Gate:** [`phase-4-v1-candidate-gate.md`](phase-4-v1-candidate-gate.md). **Driver:** [`audio.c`](../../src/platform/c64/audio.c) file header.
 
 ## 1. Goal
 
-Ship a **minimal micro SFX layer** for v1 without gameplay, presentation, or timing-model churn — or **defer** the whole pass per gate rules. Outcome is binary (accept vs defer); no undocumented partial creep. (The **C64** tree followed this and shipped the full set; §5 records the criteria used for that decision.)
+**Decision:** ship a minimal micro SFX layer for v1 without changing gameplay, presentation layout, or the input/timing model — or defer the entire pass per gate. **Outcome (C64):** full six-cue set accepted; criteria in §5.
 
 ## 2. What shipped (C64)
 
@@ -57,6 +57,6 @@ Tightening only — same event set; no second accept/defer gate.
 
 **Validation (v1):** audibility, sparseness, hierarchy, no timing/input regression. **Artifacts:** occasional faint clicks or weak attacks are **non-blocking** for v1 (hardware/emulator variance); use `QUATTRO_AUDIO=0` if needed.
 
-## 7. Out of scope
+## 7. Out of scope (this work)
 
-Next-piece preview, charset, rule changes, vocabulary expansion, melody beds.
+Charset changes, gameplay rule changes, extra vocabulary, continuous gameplay music / melody beds. (Preview UI is separate from SFX; see release note.)

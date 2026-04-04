@@ -1,5 +1,7 @@
 # Phase 3 — Performance closure
 
+**Status:** historical measurement record (Phase 3); methodology still valid for `make c64_perf`.
+
 ## Scope
 
 Measured **steady-state `APP_GAME`** work only (see [`main.c`](../../src/platform/c64/main.c)):

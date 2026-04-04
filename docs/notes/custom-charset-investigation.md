@@ -1,15 +1,12 @@
 # Custom charset — technical investigation
 
-**Status:** open (isolated from main build)  
-**Rule:** Charset investigation is isolated from gameplay and presentation baseline. Do not test charset changes inside the full Quattro game until a minimal standalone proof succeeds.
+**Status:** historical investigation — conclusions frozen at investigation time; custom charset remains **out of** **0.1.0** ([`release-0.1.0.md`](release-0.1.0.md)).
 
----
+**Rule:** Charset work stays isolated from the shipping game until a minimal standalone proof succeeds.
 
 ## Objective
 
-Integrate a custom hi-res charset on C64 (block + frame glyphs) for Quattro Phase 2.5. The direction is valid; the implementation is blocked by C64/VIC/runtime integration issues in the current llvm-mos setup.
-
----
+Custom hi-res charset (block + frame glyphs) on C64 was explored for presentation; **ROM + PETSCII** stayed the baseline because VIC/charset integration with the llvm-mos layout was not stable.
 
 ## Attempts and outcomes
 
@@ -37,15 +34,15 @@ Integrate a custom hi-res charset on C64 (block + frame glyphs) for Quattro Phas
 
 ---
 
-## Next steps (isolated)
+## If revisiting (isolated)
 
-1. **Charset probe program** — Minimal C64 program (no game loop, no input, no core): clear screen, install charset at chosen address, set $D018, print a few known chars, halt. If this fails, the issue is in the basic VIC setup.
-2. **Linker / memory map** — Determine exactly where llvm-mos places code and data; identify safe 2K region for charset.
-3. **Reintegration** — Only after the probe program is stable, attempt integration into Quattro.
+1. **Charset probe** — Minimal program: clear screen, install charset, set `$D018`, print test glyphs, halt.
+2. **Linker / memory map** — Confirm a safe 2K region for charset data under llvm-mos.
+3. **Reintegration** — Only after (1) is stable on target hardware/emulator.
 
 ---
 
 ## Reference
 
 - Unused charset implementation (for investigation): `src/platform/c64/charset.c`, `charset.h` (not linked in main build).
-- Design note: `docs/notes/presentation-identity-2.5.md`.
+- Design note: [`presentation-identity-2.5.md`](presentation-identity-2.5.md).

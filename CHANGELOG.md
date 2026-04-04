@@ -3,26 +3,21 @@
 All notable changes to Quattro are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-Quattro has no version number yet; the first tagged release will be `0.1.0`.
 
 ## [Unreleased]
 
-### Changed
-- Roadmap Phase 4: explicit v1 boundary (must-have / optional / out-of-v1); optional work gated until the baseline is stable.
-- Default C64 audio: minimal micro SFX; `QUATTRO_AUDIO=0` or full deferral still acceptable if risk is high.
-- RC closure: regression checklist (boot, full state loop, keyboard + joystick, docs-based build/run, artifact).
-- `game_apply_command` / `game_tick_gravity`: optional `GameStepResult *` (NULL-safe) for platform step telemetry; core stays audio-free.
-- C64 micro SID (`src/platform/c64/audio.c`, `audio.h`): six one-shots; menu on SID voice 2, gameplay on voice 1; shared `blip_pulse` path. Behaviour and variance: `audio.c` header; [`phase-4-micro-sfx.md`](docs/notes/phase-4-micro-sfx.md).
-- C64 UI: add a minimal next-piece preview in the left support column (keeps board/well composition unchanged).
-- Docs: micro SFX consolidated in [`phase-4-micro-sfx.md`](docs/notes/phase-4-micro-sfx.md).
+## [0.1.0] - 2026-04-04
+
+First public release. Summary: [`release-0.1.0.md`](docs/notes/release-0.1.0.md).
 
 ### Added
-- C64 micro SID layer: `audio_init` / `audio_play`, compile-time mute `QUATTRO_AUDIO=0` (see README **Building**).
-- Host-side core: board, piece, rules, scoring, RNG, and game state
-- Deterministic host-side tests and a host debug harness
-- First C64 integration: entry point, video, input, timing, and llvm-mos build support
-- Runnable C64 PRG validated in VICE
-- Minimal presentation pass: playfield frame, HUD (`SCORE`, `LINES`, `LEVEL`), and explicit `GAME OVER` state
-- Documentation for project vision, scope, architecture, core contract, feel baseline, core spec, tooling, and roadmap
-- `compile_commands` workflow for host, C64, and merged clangd databases
-- **Phase 2.6 — Interface composition:** Title screen (block wordmark, PRESS ANY KEY), start/help screen (start level 0–9 via keys, RETURN to start; default level 5), game-over + replay prompt ("RETURN AGAIN" → StartHelp). Level-based gravity (dedicated counter, PAL 50 Hz table). A/D repeat when held (keyboard matrix). Core: `game_start(state, seed, start_level)` and scoring `initial_level`.
+- Full C64 loop: title, start/help, gameplay, game over, and replay to start/help.
+- ROM/PETSCII presentation baseline with frame, HUD (`SCORE`, `LINES`, `LEVEL`), and field-first layout.
+- Next-piece preview in the left support column.
+- Minimal SID micro SFX, with supported silent build via `QUATTRO_AUDIO=0`.
+- Keyboard controls and joystick support (port 2).
+- Level-based gravity and start level selection (0–9).
+- Shared host-side core with deterministic tests and host debug harness.
+- Reproducible llvm-mos C64 build producing `build/quattro.prg`.
+- Documentation covering scope, architecture, host/core contract, core spec, tooling, roadmap, and release notes.
+- `compile_commands` workflow for host and C64 development.

@@ -10,11 +10,9 @@ A sober, historically-minded falling-blocks game for Commodore 64, built with co
 
 ## Status
 
-**Toward v1.0** ([`roadmap.md`](docs/roadmap.md): Phase 4 — Finish).
+**0.1.0** — first public release. Summary: [`release-0.1.0.md`](docs/notes/release-0.1.0.md). RC verification: [`phase-4-rc-closure.md`](docs/notes/phase-4-rc-closure.md).
 
-Host-side core is tested; the C64 build covers the full loop (title, start/help with levels 0–9, play, game over, replay to start/help).
-
-v1 means a stable baseline: ROM/PETSCII presentation, current controls and UI, release packaging, and documentation closure. Audio: minimal micro SFX ([`phase-4-micro-sfx.md`](docs/notes/phase-4-micro-sfx.md)); `QUATTRO_AUDIO=0` remains a fallback build option (see **Building**).
+The C64 build runs the full loop (title → start/help with levels 0–9 → play → game over → replay). The host-side core is tested and shared with the C64 build.
 
 ## Why
 
@@ -64,41 +62,49 @@ A/D MOVE  Z/X ROTATE  SPC DROP  G TICK  Q QUIT
 ## Current features
 
 - Tested host-side core (deterministic, test-backed)
-- Playable C64 build (llvm-mos, runs in VICE). C64 gameplay uses a pseudorandom seed derived at game start; deterministic seeds remain available for host tests and optional debug builds.
-- Title screen (block wordmark, PRESS ANY KEY) and start/help (level 0–9, RETURN start)
-- Gameplay: board frame, HUD (SCORE / LINES / LEVEL), **next-piece preview**, level-based gravity
-- Game over on field + replay prompt (RETURN AGAIN → start/help)
-- C64 SID micro SFX (six one-shots; disable with `QUATTRO_AUDIO=0` — see **Building** and [`phase-4-micro-sfx.md`](docs/notes/phase-4-micro-sfx.md))
-- Same game logic on host and C64 ([`host-core-contract.md`](docs/host-core-contract.md))
+- C64 build (llvm-mos, VICE or hardware). Game seed from jiffy time at start; fixed seeds for host tests / debug builds.
+- Title (block wordmark, PRESS ANY KEY) and start/help (level 0–9, RETURN)
+- Gameplay: board frame, HUD (SCORE / LINES / LEVEL), next-piece preview, level-based gravity
+- Game over on field + RETURN AGAIN → start/help
+- SID micro SFX (six one-shots; mute with `QUATTRO_AUDIO=0` — **Building**, [`phase-4-micro-sfx.md`](docs/notes/phase-4-micro-sfx.md))
+- Same rules on host and C64 — [`host-core-contract.md`](docs/host-core-contract.md)
 
 ## Building
 
 - **Host / tests:** `make host_debug`, `make test` (standard `cc`).
-- **C64:** `make c64` (requires [llvm-mos](https://github.com/llvm-mos/llvm-mos) with `mos-c64-clang`). Run: `make c64_run` (VICE) or load `build/quattro.prg` in your emulator. For a reproducible debug build: `make c64_fixed_seed` or `make c64 C64_DEFS="-DQUATTRO_FIXED_SEED=12345"`. To build without SID SFX: `rm -f build/quattro.prg && make c64 C64_DEFS="-DQUATTRO_AUDIO=0"`.
-- **clangd:** `make compdb` (host) or `make compdb-all` (host + C64). Requires [Bear](https://github.com/rizsotto/Bear); generated files are not committed.
-- **Browser demo (experimental):** Workflow builds and deploys to GitHub Pages. See [`README.md`](web-src/README.md).
+- **C64:** `make c64` ([llvm-mos](https://github.com/llvm-mos/llvm-mos) `mos-c64-clang`). Run: `make c64_run` (VICE) or load `build/quattro.prg`. Debug seed: `make c64_fixed_seed` or `make c64 C64_DEFS="-DQUATTRO_FIXED_SEED=12345"`. Silent build: `rm -f build/quattro.prg && make c64 C64_DEFS="-DQUATTRO_AUDIO=0"`.
+- **clangd:** `make compdb` or `make compdb-all` ([Bear](https://github.com/rizsotto/Bear)); generated DBs not committed.
+- **Browser demo (experimental):** Pages deploy from CI — [`README.md`](web-src/README.md).
 
 ## Controls (C64)
 
 **Gameplay:** A / D = left / right (repeat when held) · Z / X = rotate CCW / CW · SPACE = soft drop  
-**Setup:** 0–9 = start level · RETURN = start game / again after game over
+**Setup:** 0–9 = start level · RETURN = start / again after game over  
+**Joystick (port 2):** left / right / down / fire — move / soft drop / rotate ([`input.c`](src/platform/c64/input.c) header).
 
 ## Design constraints
 
-- **Toolchain:** llvm-mos; assembly only for isolated critical modules when profiling justifies it.
-- **Rendering:** character-based board (custom charset later).
-- **Core:** C only; simple deterministic PRNG; no 7-bag; CW/CCW rotation, no wall kicks by default.
-- **Scope:** no hold, ghost, multiplayer, or feature creep. See [`scope.md`](docs/scope.md).
+- **Toolchain:** llvm-mos; assembly only where profiling justifies it.
+- **Rendering:** character mode; custom charset deferred ([`custom-charset-investigation.md`](docs/notes/custom-charset-investigation.md)).
+- **Core:** C; deterministic PRNG; no 7-bag; CW/CCW rotation; no wall kicks by default.
+- **Scope:** see [`scope.md`](docs/scope.md).
+
+## Documentation
+
+| Kind | Files |
+|------|--------|
+| **Stable / public** | [`scope.md`](docs/scope.md), [`architecture.md`](docs/architecture.md), [`core-spec.md`](docs/core-spec.md), [`roadmap.md`](docs/roadmap.md), [`release-0.1.0.md`](docs/notes/release-0.1.0.md) |
+| **Engineering notes** | [`docs/notes/`](docs/notes/) — input, performance, audio, closure records, investigations |
+| **Contract** | [`host-core-contract.md`](docs/host-core-contract.md) |
+
+Change history: [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Repository
 
 | Path      | Purpose                |
 |-----------|------------------------|
 | `docs/`   | Design, spec, roadmap  |
-| `src/`    | Core, platform C64, render |
+| `src/`    | Core, platform C64   |
 | `tests/` | Core tests             |
 | `tools/` | Host debug harness     |
-| `web-src/` | Browser demo source (templates; Pages deployed via CI) |
-| `assets/` | Placeholder for future |
-
-Documentation is the source of truth for decisions and semantics. Start with [`host-core-contract.md`](docs/host-core-contract.md) and [`roadmap.md`](docs/roadmap.md).
+| `web-src/` | Browser demo source  |

@@ -1,4 +1,4 @@
-# Core spec (first concrete pass)
+# Core spec
 
 ## Global constants
 
