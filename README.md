@@ -72,7 +72,7 @@ A/D MOVE  Z/X ROTATE  SPC DROP  G TICK  Q QUIT
 ## Building
 
 - **Host / tests:** `make host_debug`, `make test` (standard `cc`).
-- **C64:** `make c64` ([llvm-mos](https://github.com/llvm-mos/llvm-mos) `mos-c64-clang`). Run: `make c64_run` (VICE) or load `build/quattro.prg`. Debug seed: `make c64_fixed_seed` or `make c64 C64_DEFS="-DQUATTRO_FIXED_SEED=12345"`. Silent build: `rm -f build/quattro.prg && make c64 C64_DEFS="-DQUATTRO_AUDIO=0"`.
+- **C64:** `make c64` ([llvm-mos](https://github.com/llvm-mos/llvm-mos) `mos-c64-clang`). Run: `make c64_run` (VICE) or load `build/quattro.prg`. Debug seed: `make c64_fixed_seed` or `make c64 C64_DEFS="-DQUATTRO_FIXED_SEED=12345"`. Silent build: `rm -f build/quattro.prg && make c64 C64_DEFS="-DQUATTRO_AUDIO=0"`. **Supported 16 KB cartridge:** `make c64_cart` / `make c64_crt` / `make c64_crt_run` — [`docs/notes/c64-cartridge.md`](docs/notes/c64-cartridge.md).
 - **Release artifact (local):** `make release_artifacts` or `make release_artifacts VERSION=v0.1.0` copies the default PRG into `dist/` for attaching to GitHub Releases; `dist/` is local staging (gitignored) — do not commit release binaries.
 - **clangd:** `make compdb` or `make compdb-all` ([Bear](https://github.com/rizsotto/Bear)); generated DBs not committed.
 - **Browser demo (experimental):** Pages deploy from CI — [`README.md`](web-src/README.md).
@@ -95,7 +95,7 @@ A/D MOVE  Z/X ROTATE  SPC DROP  G TICK  Q QUIT
 | Kind | Files |
 |------|--------|
 | **Stable / public** | [`scope.md`](docs/scope.md), [`architecture.md`](docs/architecture.md), [`core-spec.md`](docs/core-spec.md), [`roadmap.md`](docs/roadmap.md), [`release-0.1.0.md`](docs/notes/release-0.1.0.md) |
-| **Engineering notes** | [`docs/notes/`](docs/notes/) — input, performance, audio, closure records, investigations |
+| **Engineering notes** | [`docs/notes/`](docs/notes/) — input, performance, audio, C64 cartridge, closure records, investigations |
 | **Contract** | [`host-core-contract.md`](docs/host-core-contract.md) |
 
 Change history: [`CHANGELOG.md`](CHANGELOG.md).

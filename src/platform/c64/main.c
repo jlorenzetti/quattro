@@ -28,7 +28,10 @@ typedef enum {
     APP_GAME_OVER
 } AppState;
 
-int main(void) {
+/**
+ * @brief Does not return — avoids crt0 `JMP $B205` after `main` (BASIC; wrong on 16K cart ROM).
+ */
+__attribute__((noreturn)) int main(void) {
     GameState state;
     uint16_t gravity_counter = 0;
     AppState app_state = APP_TITLE;
@@ -185,5 +188,4 @@ int main(void) {
             break;
         }
     }
-    return 0;
 }

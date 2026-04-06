@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **16 KB ROM-native C64 cartridge** (`make c64_cart` → `build/quattro-cart-8000.rom`, `make c64_crt` → `build/quattro-cart.crt`, optional `make c64_crt_run`). CBM80 autostart, KERNAL preflight before `crt0`, cart-specific `__after_main`; **`.prg`** remains the default target. See [`docs/notes/c64-cartridge.md`](docs/notes/c64-cartridge.md).
+
 ## [0.1.0] - 2026-04-04
 
 First public release. Summary: [`release-0.1.0.md`](docs/notes/release-0.1.0.md).

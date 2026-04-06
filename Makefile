@@ -1,4 +1,4 @@
-.PHONY: help host_debug test c64 c64_perf c64_fixed_seed c64_run compdb compdb-host compdb-c64 compdb-all clean release_artifacts demo_gif
+.PHONY: help host_debug test c64 c64_cart c64_crt c64_crt_run c64_perf c64_fixed_seed c64_run compdb compdb-host compdb-c64 compdb-all clean release_artifacts demo_gif
 
 CORE_SRC := src/core/board.c src/core/game_state.c src/core/piece.c \
 	src/core/rng.c src/core/rules.c src/core/scoring.c \
@@ -14,6 +14,17 @@ C64_PERF_SRC ?=
 MOS_CC ?= mos-c64-clang
 BUILD_DIR := build
 C64_PRG := $(BUILD_DIR)/quattro.prg
+C64_CART_LD := tools/c64/cart.ld
+C64_CART_HEADER_S := src/platform/c64/cart_header.S
+C64_CART_HEADER_OBJ := $(BUILD_DIR)/cart_header.o
+C64_CART_BOOT_S := src/platform/c64/cart_boot.S
+C64_CART_BOOT_OBJ := $(BUILD_DIR)/cart_boot.o
+C64_CART_AFTER_MAIN_S := src/platform/c64/cart_after_main.S
+C64_CART_AFTER_MAIN_OBJ := $(BUILD_DIR)/cart_after_main.o
+C64_CART_ROM := $(BUILD_DIR)/quattro-cart-8000.rom
+C64_CART_MAP := $(BUILD_DIR)/quattro-cart.map
+C64_CRT := $(BUILD_DIR)/quattro-cart.crt
+C64_PACK_CRT := tools/c64/pack_crt.py
 
 DIST_DIR := dist
 VERSION ?=
@@ -32,6 +43,9 @@ help:
 	@echo "  make host_debug   Build and run host debug harness (optional: SEED=42)"
 	@echo "  make test        Build and run core tests"
 	@echo "  make c64         Build C64 PRG (requires llvm-mos: mos-c64-clang)"
+	@echo "  make c64_cart      16 KB raw ROM at 0x8000 (CBM80 + llvm-mos crt0); map: build/quattro-cart.map"
+	@echo "  make c64_crt       Pack ROM into VICE/CCS64 .crt (normal 16K type 0, EXROM=GAME=0)"
+	@echo "  make c64_crt_run   Attach .crt in x64sc (same as: x64sc -cartcrt build/quattro-cart.crt)"
 	@echo "  make release_artifacts  Stage default C64 PRG into dist/ for release (optional: VERSION=v0.1.0)"
 	@echo "  make c64_perf    Build C64 PRG with QUATTRO_PERF (CIA2 timers; halts after N frames)"
 	@echo "  make c64_fixed_seed  Build C64 PRG with fixed seed 12345 (reproducible debug)"
@@ -60,6 +74,33 @@ c64: $(C64_PRG)
 $(C64_PRG): $(CORE_SRC) $(C64_PLATFORM_SRC) $(C64_PERF_SRC)
 	@mkdir -p $(BUILD_DIR)
 	$(MOS_CC) -Os $(C64_DEFS) $(C64_INC) -o $@ $(CORE_SRC) $(C64_PLATFORM_SRC) $(C64_PERF_SRC)
+
+c64_cart: $(C64_CART_ROM)
+
+$(C64_CART_HEADER_OBJ): $(C64_CART_HEADER_S)
+	@mkdir -p $(BUILD_DIR)
+	$(MOS_CC) -c -o $@ $(C64_CART_HEADER_S)
+
+$(C64_CART_BOOT_OBJ): $(C64_CART_BOOT_S)
+	@mkdir -p $(BUILD_DIR)
+	$(MOS_CC) -c -o $@ $(C64_CART_BOOT_S)
+
+$(C64_CART_AFTER_MAIN_OBJ): $(C64_CART_AFTER_MAIN_S)
+	@mkdir -p $(BUILD_DIR)
+	$(MOS_CC) -c -o $@ $(C64_CART_AFTER_MAIN_S)
+
+$(C64_CART_ROM): $(CORE_SRC) $(C64_PLATFORM_SRC) $(C64_PERF_SRC) $(C64_CART_LD) $(C64_CART_HEADER_OBJ) $(C64_CART_BOOT_OBJ) $(C64_CART_AFTER_MAIN_OBJ)
+	@mkdir -p $(BUILD_DIR)
+	$(MOS_CC) -Os $(C64_DEFS) $(C64_INC) -Wl,-Map=$(C64_CART_MAP) -T $(C64_CART_LD) -o $@ $(C64_CART_HEADER_OBJ) $(C64_CART_BOOT_OBJ) $(CORE_SRC) $(C64_PLATFORM_SRC) $(C64_PERF_SRC) $(C64_CART_AFTER_MAIN_OBJ)
+
+c64_crt: $(C64_CRT)
+
+$(C64_CRT): $(C64_CART_ROM) $(C64_PACK_CRT)
+	python3 $(C64_PACK_CRT) $(C64_CART_ROM) $@ "QUATTRO 16K"
+
+c64_crt_run: $(C64_CRT)
+	@command -v x64sc >/dev/null 2>&1 || { echo "VICE x64sc not found; install VICE or attach $(C64_CRT) manually."; exit 1; }
+	x64sc -cartcrt $(abspath $(C64_CRT))
 
 c64_perf:
 	rm -f $(C64_PRG)
@@ -95,7 +136,7 @@ compdb-all: compdb-host compdb-c64
 
 clean:
 	rm -f tools/host_debug/host_debug tests/test_runner
-	rm -f $(C64_PRG)
+	rm -f $(C64_PRG) $(C64_CART_ROM) $(C64_CART_MAP) $(C64_CART_HEADER_OBJ) $(C64_CART_BOOT_OBJ) $(C64_CART_AFTER_MAIN_OBJ) $(C64_CRT)
 	rm -f compile_commands.json compile_commands.host.json compile_commands.c64.json
 
 demo_gif:

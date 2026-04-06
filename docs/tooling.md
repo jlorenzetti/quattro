@@ -21,6 +21,7 @@ Secondary path: handwritten assembly for isolated critical modules only when pro
 - **Compiler:** llvm-mos; `make c64` expects `mos-c64-clang` on PATH (set `MOS_CC` to override).
 - **Output:** `build/quattro.prg`.
 - **Run:** `make c64_run` launches VICE `x64sc` if installed; otherwise load the PRG in your C64 emulator manually.
+- **Cartridge ROM (optional):** `make c64_cart` / `c64_crt` / `c64_crt_run` — see [`notes/c64-cartridge.md`](notes/c64-cartridge.md).
 
 ## compile_commands (clangd)
 

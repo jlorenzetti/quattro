@@ -34,6 +34,17 @@
 #define C64_BORDER_COL    (*(volatile unsigned char *)0xD020)
 #define C64_BG_COL       (*(volatile unsigned char *)0xD021)
 
+/** 6510 port direction and data (RAM/ROM/I/O banking). */
+#define C64_6510_DDR  (*(volatile unsigned char *)0x00)
+#define C64_6510_PORT (*(volatile unsigned char *)0x01)
+/** CIA2: port A (VIC bank lines) and data direction. */
+#define CIA2_DDRA (*(volatile unsigned char *)0xDD02)
+#define CIA2_PRA  (*(volatile unsigned char *)0xDD00)
+/** VIC-II: control and screen/charset pointers for 40×25 @ `$0400`. */
+#define VIC_CTRL1   (*(volatile unsigned char *)0xD011)
+#define VIC_CTRL2   (*(volatile unsigned char *)0xD016)
+#define VIC_MEM_PTR (*(volatile unsigned char *)0xD018)
+
 /* Board draw cache (visible cells only). */
 static unsigned char g_last_board_char[QUATTRO_BOARD_WIDTH * QUATTRO_VISIBLE_HEIGHT];
 static unsigned char g_last_board_color[QUATTRO_BOARD_WIDTH * QUATTRO_VISIBLE_HEIGHT];
@@ -53,6 +64,24 @@ static bool g_replay_prompt_drawn = false;
 /* Start-help draw cache. */
 static bool g_start_help_labels_drawn = false;
 static uint8_t g_last_start_level = 0xFFu;
+
+/**
+ * @brief 40×25 text @ `$0400`, VIC bank 0 — align cart path with KERNAL/BASIC defaults (`$D011`/`$D016`/`$D018`, 6510, CIA2), then `cli`.
+ */
+static void c64_ensure_vic_text_0400(void) {
+    C64_6510_DDR = 0x2Fu;
+    C64_6510_PORT = 0x37u;
+
+    VIC_CTRL1 = 0x9Bu;
+    VIC_CTRL2 = 0x08u;
+
+    CIA2_DDRA = (unsigned char)(CIA2_DDRA | 0x03u);
+    CIA2_PRA = (unsigned char)((CIA2_PRA & (unsigned char)~0x03u) | 0x03u);
+
+    VIC_MEM_PTR = 0x17u;
+
+    __asm__ volatile("cli" ::: "memory");
+}
 
 static void invalidate_caches(void) {
     g_board_cache_valid = false;
@@ -122,6 +151,7 @@ static void draw_next_piece_preview(PieceKind kind) {
 }
 
 void video_init(void) {
+    c64_ensure_vic_text_0400();
     C64_BORDER_COL = COLOR_EMPTY;
     C64_BG_COL = COLOR_EMPTY;
     unsigned int i;
