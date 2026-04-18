@@ -1,4 +1,4 @@
-.PHONY: help host_debug test c64 c64_cart c64_crt c64_crt_run c64_perf c64_fixed_seed c64_run compdb compdb-host compdb-c64 compdb-all clean release_artifacts demo_gif
+.PHONY: help host_debug test c64 c64_cart c64_crt c64_crt_run c64_perf c64_fixed_seed c64_run c64_charset_probe c64_charset_probe_run compdb compdb-host compdb-c64 compdb-all clean release_artifacts demo_gif
 
 CORE_SRC := src/core/board.c src/core/game_state.c src/core/piece.c \
 	src/core/rng.c src/core/rules.c src/core/scoring.c \
@@ -26,6 +26,10 @@ C64_CART_MAP := $(BUILD_DIR)/quattro-cart.map
 C64_CRT := $(BUILD_DIR)/quattro-cart.crt
 C64_PACK_CRT := tools/c64/pack_crt.py
 
+C64_CHARSET_PROBE_LD := tools/c64/charset_probe/charset_probe.ld
+C64_CHARSET_PROBE_SRC := tools/c64/charset_probe/main.c
+C64_CHARSET_PROBE_PRG := $(BUILD_DIR)/charset_probe.prg
+
 DIST_DIR := dist
 VERSION ?=
 # Default release uses the standard C64 PRG. A future release_artifacts_silent target
@@ -50,6 +54,8 @@ help:
 	@echo "  make c64_perf    Build C64 PRG with QUATTRO_PERF (CIA2 timers; halts after N frames)"
 	@echo "  make c64_fixed_seed  Build C64 PRG with fixed seed 12345 (reproducible debug)"
 	@echo "  make c64_run     Build and run in emulator (requires VICE x64sc)"
+	@echo "  make c64_charset_probe   Non-shipping charset/VIC probe PRG (isolated; see docs/notes/custom-charset-investigation.md)"
+	@echo "  make c64_charset_probe_run  Build and run charset probe in x64sc"
 	@echo "  make compdb       Generate compile_commands.json for clangd (host; requires Bear)"
 	@echo "  make compdb-host  Generate compile_commands.host.json only"
 	@echo "  make compdb-c64   Generate compile_commands.c64.json only (requires Bear + llvm-mos)"
@@ -113,6 +119,16 @@ c64_run: $(C64_PRG)
 	@command -v x64sc >/dev/null 2>&1 || { echo "VICE x64sc not found; install VICE or run the PRG in your C64 emulator."; exit 1; }
 	x64sc $(abspath $(C64_PRG))
 
+c64_charset_probe: $(C64_CHARSET_PROBE_PRG)
+
+$(C64_CHARSET_PROBE_PRG): $(C64_CHARSET_PROBE_SRC) $(C64_CHARSET_PROBE_LD)
+	@mkdir -p $(BUILD_DIR)
+	$(MOS_CC) -Os -Wall -Wextra -Wl,-Map=$(BUILD_DIR)/charset_probe.map -T $(C64_CHARSET_PROBE_LD) -o $@ $(C64_CHARSET_PROBE_SRC)
+
+c64_charset_probe_run: $(C64_CHARSET_PROBE_PRG)
+	@command -v x64sc >/dev/null 2>&1 || { echo "VICE x64sc not found; run $(C64_CHARSET_PROBE_PRG) in your C64 emulator."; exit 1; }
+	x64sc $(abspath $(C64_CHARSET_PROBE_PRG))
+
 release_artifacts: c64
 	@mkdir -p $(DIST_DIR)
 	cp $(RELEASE_SRC_PRG) $(RELEASE_PRG)
@@ -137,6 +153,7 @@ compdb-all: compdb-host compdb-c64
 clean:
 	rm -f tools/host_debug/host_debug tests/test_runner
 	rm -f $(C64_PRG) $(C64_CART_ROM) $(C64_CART_MAP) $(C64_CART_HEADER_OBJ) $(C64_CART_BOOT_OBJ) $(C64_CART_AFTER_MAIN_OBJ) $(C64_CRT)
+	rm -f $(C64_CHARSET_PROBE_PRG) $(BUILD_DIR)/charset_probe.map
 	rm -f compile_commands.json compile_commands.host.json compile_commands.c64.json
 
 demo_gif:
