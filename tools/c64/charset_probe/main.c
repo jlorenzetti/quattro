@@ -1,6 +1,9 @@
 /**
  * @file main.c
- * @brief Minimal C64 charset probe: VIC text mode, custom charset at $3000, few test glyphs.
+ * @brief Minimal C64 charset probe: VIC text mode, custom charset at `$3000`, test glyphs.
+ *
+ * Phase B1: full 2K charset image embedded in `.rodata`, copied to RAM — stresses linker payload like
+ * a shipping charset without changing the protected link map (`charset_probe.ld`).
  */
 
 #include <stdint.h>
@@ -78,26 +81,24 @@ static void draw_test_glyphs(void) {
     }
 }
 
-/** Four distinct 8×8 patterns for screen codes 0–3. */
-static const unsigned char k_test_glyphs[4][8] = {
-    {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
-    {0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55},
-    {0x18, 0x3C, 0x7E, 0xFF, 0xFF, 0x7E, 0x3C, 0x18},
-    {0x81, 0xC3, 0xE7, 0xFF, 0xFF, 0xE7, 0xC3, 0x81},
+/** Full 2K C64 charset image: first four characters are distinct test patterns; remainder zero-filled. */
+static const unsigned char k_charset_embedded[2048] = {
+    /* Screen codes 0–3 (8 bytes each). */
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55,
+    0x18, 0x3C, 0x7E, 0xFF, 0xFF, 0x7E, 0x3C, 0x18,
+    0x81, 0xC3, 0xE7, 0xFF, 0xFF, 0xE7, 0xC3, 0x81,
 };
 
+_Static_assert(sizeof k_charset_embedded == 2048u, "embedded charset must be 2K");
+
 /**
- * @brief Installs charset into `$3000–$37FF`: zeros, then first four glyphs.
+ * @brief Copies the embedded 2K charset image into `$3000–$37FF`.
  */
 static void install_charset_at_3000(void) {
-    volatile unsigned char *p = CHARSET_RAM;
+    volatile unsigned char *const p = CHARSET_RAM;
     for (unsigned i = 0; i < 2048u; ++i) {
-        p[i] = 0u;
-    }
-    for (unsigned ch = 0; ch < 4u; ++ch) {
-        for (unsigned b = 0; b < 8u; ++b) {
-            p[ch * 8u + b] = k_test_glyphs[ch][b];
-        }
+        p[i] = k_charset_embedded[i];
     }
 }
 

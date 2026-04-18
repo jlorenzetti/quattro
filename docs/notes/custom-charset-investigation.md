@@ -4,11 +4,25 @@
 
 **Rule:** Isolate all charset experiments from the main build. No reintegration into `src/platform/c64/` until the success criteria below are met.
 
-## Guiding question
+## What we know now
 
-> Can we produce a **minimal, repeatable** llvm-mos PRG that shows a **custom charset** correctly (no video corruption) using this toolchain and runtime?
+Phase A showed that **`$D018` + a custom charset can work** under llvm-mos when **`$3000–$37FF` is not used by linked sections** (probe linker script caps the load segment at `$2FFF`). The historical corruption in the **full game** is therefore **not** “VIC + custom charset in principle”, but **integration with the real runtime / linker layout**.
 
-Until the answer is clearly **yes**, do not treat “port this into Quattro” as in scope.
+That narrows the next work to **memory and layout protocol**, not blind VIC register tuning.
+
+## Guiding questions
+
+**Closed (Phase A):**
+
+> Can we produce a **minimal, repeatable** llvm-mos PRG that shows a **custom charset** correctly (no video corruption)?
+
+**Open (Phase B):**
+
+> Does the custom charset stay stable as soon as **payload and layout approach Quattro’s**, as long as **`$3000–$37FF` stays free**?
+
+If **yes**, reintegration is plausible with a controlled map. If **no**, suspect **startup / init ordering** (ZP, data, VIC/CIA/6510) rather than (or in addition to) raw addresses.
+
+Until Phase B is answered, do not treat full in-game integration as in scope.
 
 ## Workspace
 
@@ -19,27 +33,48 @@ Until the answer is clearly **yes**, do not treat “port this into Quattro” a
 | Build | `make c64_charset_probe` (optional: `make c64_charset_probe_run` with VICE `x64sc`) |
 | Main product | **Unchanged** — `make c64` does not depend on the probe |
 
-## Phase A — minimal probe (current)
+## Phase A — minimal probe (done)
 
-**Goal:** Start, configure VIC for 40×25 text @ `$0400`, install test glyphs at `$3000–$37FF`, set `$D018`, display screen codes `0–3` in the top-left, halt.
+**Goal:** Start, configure VIC for 40×25 text @ `$0400`, install test data at `$3000–$37FF`, set `$D018`, display screen codes `0–3` in the top-left, halt.
 
-**Explicitly out of scope:** game loop, input, audio, HUD, board, gameplay timing.
+**Implementation:**
 
-**Implementation notes:**
+- Linker script `tools/c64/charset_probe/charset_probe.ld` limits the load segment to `$0801–$2FFF` so sections cannot overlap `$3000–$37FF`.
 
-- Linker script `tools/c64/charset_probe/charset_probe.ld` limits the load segment to `$0801–$2FFF` so sections cannot overlap the `$3000–$37FF` charset RAM used by VIC.
-- Charset data is **not** embedded as a full 2K ROM image in the binary for Phase A; the program clears `$3000–$37FF` and writes four 8×8 patterns only (sufficient for codes `0–3`).
+**Outcome:** Stable display in emulator; confirms toolchain + VIC path for a protected map.
 
-## Phase B — fix the memory protocol
+## Phase B — memory / layout protocol (in progress)
 
-One candidate charset base, one load path, one VIC sequence per experiment. Avoid ad-hoc address hopping; change **one** variable at a time.
+One candidate charset base, one load path, one VIC sequence per experiment. Change **one** variable at a time.
 
-## Phase C — minimal test matrix
+### B1 — Full 2K embedded charset (current)
+
+Same minimal probe, same `$3000–$37FF` target, same protected linker map.
+
+**Change:** Embed a **full 2048-byte** charset image in `.rodata` (first four characters = test patterns; remaining bytes zero), **copy** into `$3000–$37FF`, then `$D018` + halt.
+
+**Purpose:** Stress **payload size** like a shipping charset without yet matching Quattro’s full linker script. Separates “overlap with `$3000`” from “large `.rodata` next to code”.
+
+### B2 — Layout closer to Quattro (next)
+
+Relax the “artificial” cap at `$2FFF` **progressively** while keeping `$3000–$37FF` reserved, allow more sections below/above as in a real map, and **compare linker maps**.
+
+**Purpose:** Measure how fragile the charset region is once the rest of the layout resembles the game.
+
+### B3 — Reintegration shim (later)
+
+Inside the real C64 platform layer only: **no** board/gameplay — near-real init, install charset, few test glyphs, halt.
+
+**Purpose:** Isolate **linker/layout** vs **init order** (startup, ZP/data, VIC/CIA/6510 sequencing).
+
+**Do not skip B1 → B2 → B3** for a clean causal story.
+
+## Phase C — minimal test matrix (future)
 
 | Axis | Variants |
 |------|----------|
-| Data source | Embedded vs other (e.g. ROM copy) — add only after Phase A is stable |
-| Charset region | Primary: `$3000–$37FF`; optional second candidate only with a clear hypothesis |
+| Data source | Full embedded vs ROM copy (only after B1 is stable) |
+| Charset region | Primary: `$3000–$37FF`; second candidate only with a clear hypothesis |
 | VIC | Baseline aligned with `src/platform/c64/video.c`, then single-register deltas |
 
 ## Success criteria
@@ -51,13 +86,13 @@ One candidate charset base, one load path, one VIC sequence per experiment. Avoi
 
 ## Useful failure criteria
 
-A failed run still advances the investigation if it narrows blame, e.g. “only fails when `$D018` is switched” vs “fails even with ROM charset after the same linker map” vs “region `$3000` overlaps linked sections without the probe linker script”.
+A failed run still advances the investigation if it narrows blame, e.g. “only fails when `$D018` is switched” vs “fails when `.rodata` exceeds X” vs “region `$3000` overlaps linked sections without reservation”.
 
 ---
 
 ## Historical attempts (pre-0.1.0)
 
-**Context:** Explored for presentation; **ROM + PETSCII** remained the 0.1.0 baseline because VIC/charset integration with the full game layout was not stable. Conclusions below are frozen; the **probe + protocol above** supersede ad-hoc edits in the main tree.
+**Context:** Explored for presentation; **ROM + PETSCII** remained the 0.1.0 baseline because VIC/charset integration with the **full game** layout was not stable. The table is frozen; **Phase A/B above** supersede ad-hoc edits in the main tree.
 
 | # | Approach | Result |
 |---|----------|--------|
