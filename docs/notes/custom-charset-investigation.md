@@ -8,6 +8,8 @@
 
 Phase A showed that **`$D018` + a custom charset can work** under llvm-mos when **`$3000–$37FF` is not used by linked sections** (probe linker script caps the load segment at `$2FFF`). The historical corruption in the **full game** is therefore **not** “VIC + custom charset in principle”, but **integration with the real runtime / linker layout**.
 
+Phase B1 showed that a **full 2K charset image in `.rodata`** does **not** by itself break the probe: the failure mode is **not** “large embedded payload”, narrowing suspicion to **real layout**, **init order**, or **both**.
+
 That narrows the next work to **memory and layout protocol**, not blind VIC register tuning.
 
 ## Guiding questions
@@ -16,13 +18,17 @@ That narrows the next work to **memory and layout protocol**, not blind VIC regi
 
 > Can we produce a **minimal, repeatable** llvm-mos PRG that shows a **custom charset** correctly (no video corruption)?
 
-**Open (Phase B):**
+**Closed (Phase B1):**
 
-> Does the custom charset stay stable as soon as **payload and layout approach Quattro’s**, as long as **`$3000–$37FF` stays free**?
+> Does a **full 2K embedded** charset break the minimal probe?
+
+**Open (Phase B2):**
+
+> If **`$3000–$37FF` stays free**, does the charset stay stable as **linker memory model and init** move toward the real game?
 
 If **yes**, reintegration is plausible with a controlled map. If **no**, suspect **startup / init ordering** (ZP, data, VIC/CIA/6510) rather than (or in addition to) raw addresses.
 
-Until Phase B is answered, do not treat full in-game integration as in scope.
+Until Phase B2 is answered, do not treat full in-game integration as in scope.
 
 ## Workspace
 
@@ -30,16 +36,14 @@ Until Phase B is answered, do not treat full in-game integration as in scope.
 |------|--------|
 | Branch | Local `investigate/custom-charset` (or equivalent); not required on `main` until conclusions are ready |
 | Probe location | `tools/c64/charset_probe/` — autonomous, small, disposable |
-| Build | `make c64_charset_probe` (optional: `make c64_charset_probe_run` with VICE `x64sc`) |
+| Build | `make c64_charset_probe` / `make c64_charset_probe_run` — B1 linker; `make c64_charset_probe_b21` / `make c64_charset_probe_b21_run` — B2.1 linker |
 | Main product | **Unchanged** — `make c64` does not depend on the probe |
 
 ## Phase A — minimal probe (done)
 
 **Goal:** Start, configure VIC for 40×25 text @ `$0400`, install test data at `$3000–$37FF`, set `$D018`, display screen codes `0–3` in the top-left, halt.
 
-**Implementation:**
-
-- Linker script `tools/c64/charset_probe/charset_probe.ld` limits the load segment to `$0801–$2FFF` so sections cannot overlap `$3000–$37FF`.
+**Implementation:** `tools/c64/charset_probe/charset_probe.ld` limits the load segment to `$0801–$2FFF` so sections cannot overlap `$3000–$37FF`.
 
 **Outcome:** Stable display in emulator; confirms toolchain + VIC path for a protected map.
 
@@ -47,27 +51,38 @@ Until Phase B is answered, do not treat full in-game integration as in scope.
 
 One candidate charset base, one load path, one VIC sequence per experiment. Change **one** variable at a time.
 
-### B1 — Full 2K embedded charset (current)
+### B1 — Full 2K embedded charset (done)
 
-Same minimal probe, same `$3000–$37FF` target, same protected linker map.
+Same minimal probe, same `$3000–$37FF` target, B1 linker (`charset_probe.ld`).
 
 **Change:** Embed a **full 2048-byte** charset image in `.rodata` (first four characters = test patterns; remaining bytes zero), **copy** into `$3000–$37FF`, then `$D018` + halt.
 
-**Purpose:** Stress **payload size** like a shipping charset without yet matching Quattro’s full linker script. Separates “overlap with `$3000`” from “large `.rodata` next to code”.
+**Outcome:** Same stable display; large `.rodata` is **not** the culprit by itself.
 
-### B2 — Layout closer to Quattro (next)
+### B2 — Layout and init vs Quattro (current)
 
-Relax the “artificial” cap at `$2FFF` **progressively** while keeping `$3000–$37FF` reserved, allow more sections below/above as in a real map, and **compare linker maps**.
+#### B2.1 — Default C64 `MEMORY`, charset region forbidden (current)
 
-**Purpose:** Measure how fragile the charset region is once the rest of the layout resembles the game.
+**Goal:** Use the **same `MEMORY` line** as the default C64 PRG (`ram` @ `$0801`, `LENGTH 0xC7FF`), but **forbid** placing sections in `$3000–$37FF` (assert `__heap_start <= 0x3000` for contiguous layout).
 
-### B3 — Reintegration shim (later)
+**Why:** Same **linker script shape** as production (`mos-platform/c64/lib/link.ld`) while keeping the charset window empty. For the current probe binary, VMAs match B1; the **map file** documents the full `ram` span.
+
+**Files:** `tools/c64/charset_probe/charset_probe_b21.ld`
+**Build:** `make c64_charset_probe_b21` → `build/charset_probe_b21.prg`, `build/charset_probe_b21.map`
+
+**Limitation:** With contiguous sections, the assert is equivalent to “everything below `$3000`”. Splitting sections across the hole (code low, bss high) **requires** a future linker script; link will fail if the binary grows past `$3000` until then.
+
+#### B2.2 — Compare maps (next)
+
+Without running the full game: compare `build/charset_probe_b21.map` (and B1’s `build/charset_probe.map`) with **`build/quattro.map`** from `make c64`. Inspect which sections approach `$3000` in the real game and how structural differences differ from the probe.
+
+#### B2.3 — Quasi-runtime shim (later)
 
 Inside the real C64 platform layer only: **no** board/gameplay — near-real init, install charset, few test glyphs, halt.
 
 **Purpose:** Isolate **linker/layout** vs **init order** (startup, ZP/data, VIC/CIA/6510 sequencing).
 
-**Do not skip B1 → B2 → B3** for a clean causal story.
+**Do not skip B1 → B2.1 → B2.2 → B2.3** for a clean causal story.
 
 ## Phase C — minimal test matrix (future)
 

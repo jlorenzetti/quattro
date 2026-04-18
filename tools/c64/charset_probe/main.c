@@ -3,7 +3,8 @@
  * @brief Minimal C64 charset probe: VIC text mode, custom charset at `$3000`, test glyphs.
  *
  * Phase B1: full 2K charset image embedded in `.rodata`, copied to RAM — stresses linker payload like
- * a shipping charset without changing the protected link map (`charset_probe.ld`).
+ * a shipping charset. Link with `charset_probe.ld` (B1: ram capped before `$3000`) or
+ * `charset_probe_b21.ld` (B2.1: default C64 `ram` length + `ASSERT` — same binary layout for this program).
  */
 
 #include <stdint.h>
