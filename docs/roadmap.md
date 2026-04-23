@@ -37,12 +37,12 @@ Phases **0–4** are **complete** through public release **0.1.0** — [`release
 
 ## Phase 2.5 — Presentation identity
 
-**Status:** completed (ROM/PETSCII only; custom charset deferred.)
+**Status:** completed (ROM/PETSCII **shipping** default; optional **bank-2** custom charset validated in-tree — not the default PRG.)
 
 - Palette: black background, border = background ($D020 = $D021), frame 15, locked 1, active 3, HUD 15.
 - Layout: board centred (BOARD_SCREEN_X = 15), HUD left (HUD_SCREEN_COL = 1).
 - Game over: 3-row light grey band inside board, "GAME  OVER" reverse (message on field).
-- Custom charset: deferred; see [`custom-charset-investigation.md`](notes/custom-charset-investigation.md).
+- Custom charset: shipping remains ROM/PETSCII; technical investigation **closed** with a playable bank-2 variant — [`custom-charset-investigation.md`](notes/custom-charset-investigation.md).
 
 ## Phase 2.6 — Interface composition
 

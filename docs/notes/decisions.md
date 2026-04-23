@@ -45,6 +45,8 @@ Custom charset remains a valid direction for Phase 2.5, but implementation is bl
 
 **Rule:** Do not test charset changes inside the full Quattro game until the probe program validates VIC charset switching.
 
+**Update (2026-04):** Investigation **substantially closed** (see `docs/notes/custom-charset-investigation.md`). Standalone probes **and** the full-game **bank-2** build (`make c64_vic_bank2`) validate VIC charset switching and readable in-game use; the rule above is **lifted** for that **documented** path. Default shipping build remains ROM/PETSCII (`make c64`).
+
 **Reference:** `docs/notes/custom-charset-investigation.md`
 
 ---

@@ -86,7 +86,7 @@ A/D MOVE  Z/X ROTATE  SPC DROP  G TICK  Q QUIT
 ## Design constraints
 
 - **Toolchain:** llvm-mos; assembly only where profiling justifies it.
-- **Rendering:** character mode; custom charset deferred ([`custom-charset-investigation.md`](docs/notes/custom-charset-investigation.md)).
+- **Rendering:** character mode; shipping uses ROM/PETSCII; optional bank-2 custom charset (`make c64_vic_bank2`) — [`custom-charset-investigation.md`](docs/notes/custom-charset-investigation.md).
 - **Core:** C; deterministic PRNG; no 7-bag; CW/CCW rotation; no wall kicks by default.
 - **Scope:** see [`scope.md`](docs/scope.md).
 

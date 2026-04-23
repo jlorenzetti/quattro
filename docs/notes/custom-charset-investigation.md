@@ -117,7 +117,7 @@ Compare `build/charset_probe_b21.map` with **`build/quattro.map`**. **Finding:**
 
 ### B2.3c — In-game bank 2 “stage” experiment (done)
 
-**Goal:** Same real Quattro PRG (no linker surgery): **VIC bank 2** (`$8000`–`$BFFF`), **screen matrix** at **`$8000`**, **2K charset** copied to **`$8800`–`$8FFF`**, **`$D018` = `0x02`** (indices relative to bank base). Embedded charset matches the probe (first four glyphs; rest zero) — **PETSCII / HUD text will not match ROM**; success is **stability** (no overlap corruption), not a polished UI.
+**Goal:** Same real Quattro PRG (no linker surgery): **VIC bank 2** (`$8000`–`$BFFF`), **screen matrix** at **`$8000`**, **2K charset** copied to **`$8800`–`$8FFF`**, **`$D018` = `0x02`** (indices relative to bank base). **B2.3c milestone** used a **four-glyph probe** in RAM to prove **stability** only (no overlap corruption). **This branch:** with **`QUATTRO_VIC_BANK2_CHARSET`**, `video.c` installs the **B3** readable charset (`bank2_working_charset_data.h`), not the probe payload.
 
 **Build:** `make c64_vic_bank2` (optional `make c64_vic_bank2_run` with VICE `x64sc`). Implemented with **`QUATTRO_VIC_BANK2_CHARSET`** in `video.c` / `memory_map.h`.
 
