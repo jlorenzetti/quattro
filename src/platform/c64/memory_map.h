@@ -6,8 +6,13 @@
 #ifndef QUATTRO_PLATFORM_C64_MEMORY_MAP_H
 #define QUATTRO_PLATFORM_C64_MEMORY_MAP_H
 
-/** Default screen RAM base (C64). */
-#define C64_SCREEN_RAM  ((volatile unsigned char *)0x0400)
+/** Default screen RAM base (C64). VIC bank 0, screen @ `$0400`. */
+#ifndef QUATTRO_VIC_BANK2_CHARSET
+#define C64_SCREEN_RAM ((volatile unsigned char *)0x0400)
+#else
+/** Experimental: VIC bank 2 (`$8000`–`$BFFF`), screen matrix @ `$8000` (see `video.c`). */
+#define C64_SCREEN_RAM ((volatile unsigned char *)0x8000)
+#endif
 
 /** Color RAM base (C64). */
 #define C64_COLOR_RAM   ((volatile unsigned char *)0xD800)
